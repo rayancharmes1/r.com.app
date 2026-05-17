@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getDatabase } from "firebase/database";
-import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCfySuJsG2xJmz9Zt7uWD21JAqn6p7JCx0",
@@ -17,7 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
-export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
 export const ADMIN_UID = "ImB6u7fpdZbibN3LyCaAnwbHZZq1";
+export const WHATSAPP = "2250160672966";
 export default app;

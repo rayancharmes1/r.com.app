@@ -1,15 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
-import MarketPage from './pages/MarketPage';
-
-function PrivateRoute({ children }) {
-  const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
-}
+import ShopPage from './pages/ShopPage';
+import InstallBanner from './components/InstallBanner';
 
 export default function App() {
   return (
@@ -17,11 +13,12 @@ export default function App() {
       <CartProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/shop/:discId" element={<ShopPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
-            <Route path="/market" element={<MarketPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <InstallBanner />
         </BrowserRouter>
       </CartProvider>
     </AuthProvider>

@@ -1,29 +1,25 @@
 import React, { useState } from 'react';
 import { auth, googleProvider, db } from '../firebase';
-import {
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile
-} from 'firebase/auth';
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { ref, set } from 'firebase/database';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import RcomLogo from '../components/RcomLogo';
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from || '/';
 
-  const saveUser = async (user, extraName) => {
+  // where to redirect after login
+  const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
+
+  const saveUser = async (user, extra = {}) => {
     await set(ref(db, `users/${user.uid}`), {
-      name: user.displayName || extraName || '',
+      name: user.displayName || extra.name || '',
       email: user.email || '',
       createdAt: Date.now(),
     });
@@ -34,28 +30,27 @@ export default function LoginPage() {
     try {
       const res = await signInWithPopup(auth, googleProvider);
       await saveUser(res.user);
-      navigate(from, { replace: true });
+      navigate(returnTo, { replace: true });
     } catch (e) { setError(e.message); }
     setLoading(false);
   };
 
-  const handleEmail = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
       if (mode === 'register') {
         const res = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(res.user, { displayName: name });
-        await saveUser(res.user, name);
+        await saveUser(res.user, { name });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      navigate(from, { replace: true });
+      navigate(returnTo, { replace: true });
     } catch (e) {
       const msgs = {
         'auth/email-already-in-use': 'Email déjà utilisé.',
         'auth/weak-password': 'Mot de passe trop faible (6 car. min).',
         'auth/user-not-found': 'Compte introuvable.',
-        'auth/wrong-password': 'Mot de passe incorrect.',
         'auth/invalid-credential': 'Email ou mot de passe incorrect.',
       };
       setError(msgs[e.code] || e.message);
@@ -66,14 +61,10 @@ export default function LoginPage() {
   return (
     <div style={s.page}>
       <div style={s.card}>
-        <div style={{display:'flex',justifyContent:'center',marginBottom:8}}>
-          <RcomLogo size={72} showText={true} textSize={32}/>
+        <div style={{ display:'flex', justifyContent:'center', marginBottom:8 }}>
+          <RcomLogo size={70} showText textSize={32} />
         </div>
         <p style={s.tagline}>Votre plateforme tout-en-un</p>
-
-        {location.state?.message && (
-          <div style={s.infoBox}>{location.state.message}</div>
-        )}
 
         <button onClick={handleGoogle} style={s.googleBtn} disabled={loading}>
           <svg width="20" height="20" viewBox="0 0 24 24" style={{marginRight:10}}>
@@ -85,26 +76,26 @@ export default function LoginPage() {
           Continuer avec Google
         </button>
 
-        <div style={s.divider}><span style={{background:'white',padding:'0 12px',color:'#bbb',fontSize:13}}>ou</span></div>
+        <div style={s.divider}><span style={s.dividerText}>ou</span></div>
 
-        <form onSubmit={handleEmail} style={s.form}>
+        <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:10 }}>
           {mode === 'register' && (
-            <input style={s.input} placeholder="Nom complet" value={name} onChange={e=>setName(e.target.value)} required/>
+            <input style={s.input} placeholder="Nom complet" value={name} onChange={e=>setName(e.target.value)} required />
           )}
-          <input style={s.input} type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required/>
-          <input style={s.input} type="password" placeholder="Mot de passe" value={password} onChange={e=>setPassword(e.target.value)} required/>
-          {error && <p style={s.error}>{error}</p>}
+          <input style={s.input} type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
+          <input style={s.input} type="password" placeholder="Mot de passe" value={password} onChange={e=>setPassword(e.target.value)} required />
+          {error && <p style={{ color:'#e74c3c', fontSize:13 }}>{error}</p>}
           <button type="submit" style={s.submitBtn} disabled={loading}>
             {loading ? '...' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
           </button>
         </form>
 
-        <button style={s.switchBtn} onClick={()=>{setMode(mode==='login'?'register':'login');setError('');}}>
-          {mode==='login' ? "Pas de compte ? S'inscrire" : "Déjà un compte ? Se connecter"}
+        <button style={s.switchBtn} onClick={() => { setMode(mode==='login'?'register':'login'); setError(''); }}>
+          {mode === 'login' ? "Pas de compte ? S'inscrire gratuitement" : "Déjà un compte ? Se connecter"}
         </button>
 
-        <button style={s.backBtn} onClick={()=>navigate('/market')}>
-          ← Continuer sans compte
+        <button style={s.skipBtn} onClick={() => navigate(returnTo, { replace:true })}>
+          Continuer sans compte →
         </button>
       </div>
     </div>
@@ -112,16 +103,14 @@ export default function LoginPage() {
 }
 
 const s = {
-  page:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#f0f2f5,#dfe3ea)',padding:20},
-  card:{background:'white',borderRadius:24,padding:'40px 36px',width:'100%',maxWidth:420,boxShadow:'0 20px 60px rgba(0,0,0,0.15)',textAlign:'center'},
-  tagline:{color:'#888',fontSize:13,marginBottom:20,letterSpacing:1},
-  infoBox:{background:'#fff8e1',border:'1px solid #ffe082',borderRadius:10,padding:'10px 14px',fontSize:13,color:'#f57c00',marginBottom:16,textAlign:'left'},
-  googleBtn:{width:'100%',padding:'13px',border:'2px solid #e0e0e0',borderRadius:12,background:'white',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,fontWeight:600,cursor:'pointer',fontFamily:"'Outfit',sans-serif"},
-  divider:{display:'flex',alignItems:'center',margin:'18px 0',borderTop:'1px solid #eee',position:'relative',justifyContent:'center'},
-  form:{display:'flex',flexDirection:'column',gap:11},
-  input:{padding:'13px 15px',border:'2px solid #eee',borderRadius:11,fontSize:15,outline:'none',width:'100%',boxSizing:'border-box',fontFamily:"'Outfit',sans-serif"},
-  error:{color:'#e74c3c',fontSize:13,textAlign:'left'},
-  submitBtn:{padding:'14px',background:'linear-gradient(135deg,#c0392b,#e67e22)',color:'white',border:'none',borderRadius:12,fontSize:16,fontWeight:700,cursor:'pointer',fontFamily:"'Outfit',sans-serif"},
-  switchBtn:{background:'none',border:'none',color:'#e67e22',fontSize:14,marginTop:14,cursor:'pointer',textDecoration:'underline'},
-  backBtn:{background:'none',border:'none',color:'#aaa',fontSize:13,marginTop:8,cursor:'pointer',display:'block',width:'100%'},
+  page:{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg,#f0f2f5,#dfe3ea)', padding:20 },
+  card:{ background:'white', borderRadius:24, padding:'36px 32px', width:'100%', maxWidth:400, boxShadow:'0 20px 60px rgba(0,0,0,0.13)', textAlign:'center' },
+  tagline:{ color:'#aaa', fontSize:13, marginBottom:24, letterSpacing:1 },
+  googleBtn:{ width:'100%', padding:13, border:'2px solid #e8e8e8', borderRadius:12, background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:"'Outfit',sans-serif" },
+  divider:{ display:'flex', alignItems:'center', gap:12, margin:'18px 0', color:'#e0e0e0' },
+  dividerText:{ color:'#bbb', fontSize:13, background:'white', padding:'0 8px' },
+  input:{ padding:'12px 14px', border:'2px solid #eee', borderRadius:11, fontSize:15, outline:'none', width:'100%', boxSizing:'border-box', fontFamily:"'Outfit',sans-serif" },
+  submitBtn:{ padding:13, background:'linear-gradient(135deg,#c0392b,#e67e22)', color:'white', border:'none', borderRadius:12, fontSize:15, fontWeight:700, cursor:'pointer', fontFamily:"'Outfit',sans-serif" },
+  switchBtn:{ background:'none', border:'none', color:'#e67e22', fontSize:13, marginTop:14, cursor:'pointer', textDecoration:'underline', display:'block', width:'100%' },
+  skipBtn:{ background:'none', border:'none', color:'#aaa', fontSize:13, marginTop:8, cursor:'pointer', display:'block', width:'100%' },
 };

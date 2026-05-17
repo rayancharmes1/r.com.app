@@ -5,24 +5,13 @@ import { onAuthStateChanged } from 'firebase/auth';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
+  const [user, setUser] = useState(undefined); // undefined = loading
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
-    return unsub;
+    return onAuthStateChanged(auth, u => setUser(u || null));
   }, []);
-
   const isAdmin = user?.uid === ADMIN_UID;
-
-  return (
-    <AuthContext.Provider value={{ user, isAdmin, loading }}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  if (user === undefined) return null; // loading
+  return <AuthContext.Provider value={{ user, isAdmin }}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);
