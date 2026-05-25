@@ -201,9 +201,35 @@ export default function ShopPage() {
   const [showCart, setShowCart] = useState(false);
   const [showLoginWall, setShowLoginWall] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showFavs, setShowFavs] = useState(false);
   const [orderOk, setOrderOk] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [gridCols, setGridCols] = useState(2); // 1, 2, or 4
+  const [gridCols, setGridCols] = useState(2);
+
+  // ── FAVORITES ──
+  const [favIds, setFavIds] = useState({});
+
+  useEffect(() => {
+    if (!user) { setFavIds({}); return; }
+    const r = ref(db, `users/${user.uid}/favs/${discId}`);
+    return onValue(r, snap => { setFavIds(snap.exists() ? snap.val() : {}); });
+  }, [user, discId]);
+
+  const isFav = (id) => !!favIds[id];
+
+  const toggleFav = async (art, e) => {
+    e.stopPropagation();
+    if (!user) { setShowLoginWall(true); return; }
+    if (isFav(art.id)) {
+      await remove(ref(db, `users/${user.uid}/favs/${discId}/${art.id}`));
+    } else {
+      await update(ref(db, `users/${user.uid}/favs/${discId}`), {
+        [art.id]: { id: art.id, name: art.name, price: art.price, imageUrl: art.imageUrl||'', savedAt: Date.now() }
+      });
+    }
+  };
+
+  const favArticles = articles.filter(a => isFav(a.id));
 
   // Admin form
   const [showForm, setShowForm] = useState(false);
@@ -227,7 +253,11 @@ export default function ShopPage() {
       const combined = [...oldArts, ...newArts];
       const seen = new Set();
       const deduped = combined.filter(a => { if(seen.has(a.id)) return false; seen.add(a.id); return true; });
-      deduped.sort((a,b) => (b.createdAt||0)-(a.createdAt||0));
+      // Shuffle randomly each load
+      for (let i = deduped.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deduped[i], deduped[j]] = [deduped[j], deduped[i]];
+      }
       setArticles(deduped);
       if(loaded >= total) setLoading(false);
     };
@@ -252,7 +282,7 @@ export default function ShopPage() {
   const promoArts = articles.filter(a => a.isPromo && !a.isFlash && a.stock!==0);
   const categories = ['Tous', ...existingCategories];
 
-  const baseList = activeTab==='flash' ? flashArts : activeTab==='promo' ? promoArts : articles;
+  const baseList = activeTab==='flash' ? flashArts : activeTab==='promo' ? promoArts : activeTab==='favs' ? favArticles : articles;
   const filtered = baseList.filter(a => {
     const ms = !search || a.name?.toLowerCase().includes(search.toLowerCase()) || a.category?.toLowerCase().includes(search.toLowerCase());
     const mc = activeCategory==='Tous' || a.category===activeCategory;
@@ -411,9 +441,8 @@ export default function ShopPage() {
       )}
 
       {/* ── TABS ── */}
-      {(flashArts.length>0||promoArts.length>0)&&(
-        <div style={s.tabRow}>
-          {[{k:'all',l:'🏪 Tous'},...(flashArts.length>0?[{k:'flash',l:`⚡ Flash (${flashArts.length})`}]:[]),...(promoArts.length>0?[{k:'promo',l:`🏷️ Promos (${promoArts.length})`}]:[])].map(t=>(
+      <div style={s.tabRow}>
+          {[{k:'all',l:'🏪 Tous'},...(flashArts.length>0?[{k:'flash',l:`⚡ Flash (${flashArts.length})`}]:[]),...(promoArts.length>0?[{k:'promo',l:`🏷️ Promos (${promoArts.length})`}]:[]),...(user&&favArticles.length>0?[{k:'favs',l:`❤️ Favoris (${favArticles.length})`}]:[])].map(t=>(
             <button key={t.k} style={{...s.tabBtn,borderBottom:activeTab===t.k?`3px solid ${color}`:'3px solid transparent',color:activeTab===t.k?color:'#888',fontWeight:activeTab===t.k?700:500}}
               onClick={()=>setActiveTab(t.k)}>{t.l}</button>
           ))}
@@ -490,6 +519,11 @@ export default function ShopPage() {
                   {a.isFlash&&<span style={{...s.tag,background:'#e74c3c'}}>⚡</span>}
                   {a.isPromo&&!a.isFlash&&<span style={{...s.tag,background:color}}>🏷️</span>}
                   {a.stock===0&&<div style={s.outStock}>Rupture</div>}
+                  {/* Favorite button */}
+                  <button style={{...s.favBtn, color: isFav(a.id)?'#e74c3c':'rgba(255,255,255,0.8)', background: isFav(a.id)?'white':'rgba(0,0,0,0.25)'}}
+                    onClick={(e)=>toggleFav(a,e)}>
+                    {isFav(a.id)?'❤️':'🤍'}
+                  </button>
                 </div>
                 <div style={{...s.cardBody, padding: compact?'8px':gridCols===1?'14px 16px':'10px 12px'}}>
                   {a.category&&!compact&&<span style={{...s.catLabel,color}}>{a.category}</span>}
@@ -563,6 +597,11 @@ export default function ShopPage() {
                 </div>
               )}
               {ii.length>1&&<div style={s.thumbRow}>{ii.map((u,i)=><img key={i} src={u} alt="" style={{...s.thumb,outline:i===carIdx?`3px solid ${color}`:'3px solid transparent'}} onClick={()=>setCarIdx(i)}/>)}</div>}
+              {/* Favorite in detail */}
+              <button style={{...s.favBtnLarge, background: isFav(selected.id)?'#fdecea':'#f8f8f8', color: isFav(selected.id)?'#e74c3c':'#888'}}
+                onClick={(e)=>toggleFav(selected,e)}>
+                {isFav(selected.id)?'❤️ Retiré des favoris':'🤍 Ajouter aux favoris'}
+              </button>
               {selected.stock===0&&<div style={s.outStockBig}>Rupture de stock</div>}
               {selected.category&&<span style={{...s.catLabel,color,display:'inline-block',marginBottom:6}}>{selected.category}</span>}
               <h2 style={s.detailName}>{selected.name}</h2>
