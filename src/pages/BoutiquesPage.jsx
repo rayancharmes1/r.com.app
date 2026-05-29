@@ -29,10 +29,11 @@ export default function BoutiquesPage() {
           <div style={s.grid}>
             {shops.map(shop => (
               <Link key={shop.id} to={`/boutique/${shop.id}`} style={s.card}>
-                <div style={s.icon}>R</div>
+                {shop.imageUrl ? <img src={shop.imageUrl} alt="" style={s.logo} /> : <div style={s.icon}>R</div>}
                 <div>
                   <h2 style={s.name}>{shop.name}</h2>
                   <p style={s.owner}>par {shop.ownerName}</p>
+                  {shop.description && <p style={s.desc}>{shop.description}</p>}
                 </div>
                 <span style={s.arrow}>Voir</span>
               </Link>
@@ -52,8 +53,10 @@ const s = {
   grid: { maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 14 },
   card: { background: 'white', borderRadius: 16, padding: 16, boxShadow: '0 4px 14px rgba(0,0,0,0.08)', textDecoration: 'none', color: '#222', display: 'flex', alignItems: 'center', gap: 12 },
   icon: { width: 42, height: 42, borderRadius: 12, background: 'linear-gradient(135deg,#c0392b,#e67e22)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900 },
+  logo: { width: 48, height: 48, borderRadius: 12, objectFit: 'cover', flexShrink: 0 },
   name: { margin: 0, fontSize: 17 },
   owner: { margin: '4px 0 0', color: '#777', fontSize: 13 },
+  desc: { margin: '4px 0 0', color: '#555', fontSize: 12, lineHeight: 1.35 },
   arrow: { marginLeft: 'auto', color: '#c0392b', fontWeight: 900, fontSize: 13 },
   secondary: { background: 'white', color: '#444', border: '2px solid #eee', borderRadius: 12, padding: '10px 14px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" },
   loading: { maxWidth: 1000, margin: '40px auto', color: '#777', textAlign: 'center' },
