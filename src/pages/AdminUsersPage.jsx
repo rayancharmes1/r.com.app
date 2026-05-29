@@ -72,6 +72,7 @@ export default function AdminUsersPage() {
   const [articleForm, setArticleForm] = useState(emptyArticle);
   const [editArticleId, setEditArticleId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [photoSaving, setPhotoSaving] = useState({});
 
   const load = async () => {
     setLoading(true);
@@ -164,7 +165,19 @@ export default function AdminUsersPage() {
   const handleShopImage = async (uid, field, event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    updateShopForm(uid, { [field]: await compressImage(file, 900) });
+    const key = `${uid}-${field}`;
+    setPhotoSaving(prev => ({ ...prev, [key]: true }));
+    try {
+      const image = await compressImage(file, 900);
+      const nextForm = { ...(shopForms[uid] || shops[uid] || {}), [field]: image };
+      updateShopForm(uid, { [field]: image });
+      await updateShopDetails(uid, nextForm);
+      setMessage(field === 'imageUrl' ? 'Logo de boutique enregistre' : 'Banniere de boutique enregistree');
+      await load();
+    } catch (error) {
+      alert(error.message);
+    }
+    setPhotoSaving(prev => ({ ...prev, [key]: false }));
   };
 
   const removeShop = async user => {
@@ -266,6 +279,8 @@ export default function AdminUsersPage() {
             const shop = shops[user.uid];
             const form = shopForms[user.uid] || {};
             const active = form.active ?? shop?.active !== false;
+            const logoSaving = !!photoSaving[`${user.uid}-imageUrl`];
+            const bannerSaving = !!photoSaving[`${user.uid}-bannerUrl`];
             return (
               <article key={user.uid} style={{ ...s.card, borderColor: isAdminAccount ? '#c0392b' : '#eee' }}>
                 <div style={s.userRow}>
@@ -306,14 +321,15 @@ export default function AdminUsersPage() {
 
                     <div style={s.photoRow}>
                       <label style={s.photoBox}>
-                        {form.imageUrl ? <img src={form.imageUrl} alt="" style={s.photoPreview} /> : <span>Logo</span>}
+                        {logoSaving ? <span>Enregistrement...</span> : form.imageUrl ? <img src={form.imageUrl} alt="" style={s.photoPreview} /> : <span>Logo boutique</span>}
                         <input type="file" accept="image/*" onChange={event => handleShopImage(user.uid, 'imageUrl', event)} style={{ display: 'none' }} />
                       </label>
                       <label style={s.photoBox}>
-                        {form.bannerUrl ? <img src={form.bannerUrl} alt="" style={s.photoPreview} /> : <span>Banniere</span>}
+                        {bannerSaving ? <span>Enregistrement...</span> : form.bannerUrl ? <img src={form.bannerUrl} alt="" style={s.photoPreview} /> : <span>Banniere</span>}
                         <input type="file" accept="image/*" onChange={event => handleShopImage(user.uid, 'bannerUrl', event)} style={{ display: 'none' }} />
                       </label>
                     </div>
+                    <p style={s.helpText}>Les photos sont enregistrees automatiquement apres selection.</p>
 
                     <div style={s.limitRow}>
                       <span style={s.label}>Limite</span>
@@ -447,6 +463,7 @@ const s = {
   photoRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
   photoBox: { height: 94, border: '2px dashed #ddd', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', color: '#999', fontWeight: 800, cursor: 'pointer' },
   photoPreview: { width: '100%', height: '100%', objectFit: 'cover' },
+  helpText: { margin: '-4px 0 0', color: '#777', fontSize: 12, lineHeight: 1.35 },
   primary: { background: 'linear-gradient(135deg,#c0392b,#e67e22)', color: 'white', border: 'none', borderRadius: 12, padding: '11px 14px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" },
   smallPrimary: { background: '#2980b9', color: 'white', border: 'none', borderRadius: 10, padding: '9px 10px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" },
   smallSecondary: { background: '#f0f2f5', color: '#444', border: 'none', borderRadius: 10, padding: '8px 10px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" },
