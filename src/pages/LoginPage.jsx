@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { auth, googleProvider, db } from '../firebase';
 import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
+import { ref, update } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import RcomLogo from '../components/RcomLogo';
 
@@ -18,10 +18,12 @@ export default function LoginPage() {
   const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/';
 
   const saveUser = async (user, extra = {}) => {
-    await set(ref(db, `users/${user.uid}`), {
+    await update(ref(db, `users/${user.uid}`), {
       name: user.displayName || extra.name || '',
+      displayName: user.displayName || extra.name || '',
       email: user.email || '',
-      createdAt: Date.now(),
+      photoURL: user.photoURL || '',
+      lastLoginAt: Date.now(),
     });
   };
 

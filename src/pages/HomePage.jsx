@@ -35,7 +35,7 @@ function compressImage(file, maxSize=400) {
 }
 
 export default function HomePage() {
-  const { user, isAdmin } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [disciplines, setDisciplines] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -148,6 +148,19 @@ export default function HomePage() {
                   <p style={s.ddName}>{user.displayName||user.email}</p>
                   {isAdmin && <span style={s.adminTag}>⭐ Admin</span>}
                   <hr style={s.hr}/>
+                  {isAdmin && (
+                    <button style={s.ddBtnDark} onClick={() => navigate('/admin/comptes')}>
+                      Gestion des comptes
+                    </button>
+                  )}
+                  {profile?.hasShop && (
+                    <button style={s.ddBtnDark} onClick={() => navigate('/ma-boutique')}>
+                      Ma boutique
+                    </button>
+                  )}
+                  <button style={s.ddBtnDark} onClick={() => navigate('/boutiques')}>
+                    Boutiques R.COM
+                  </button>
                   <button style={s.ddBtn} onClick={() => signOut(auth)}>🚪 Déconnexion</button>
                 </div>
               )}
@@ -162,6 +175,10 @@ export default function HomePage() {
       <div style={s.hero}>
         <h1 style={s.heroT}>Bienvenue sur <span style={s.heroS}>R.COM</span></h1>
         <p style={s.heroSub}>Choisissez votre univers pour découvrir nos offres</p>
+        <div style={s.heroActions}>
+          <button style={s.heroBtn} onClick={() => navigate('/boutiques')}>Voir les boutiques</button>
+          {profile?.hasShop && <button style={s.heroBtnAlt} onClick={() => navigate('/ma-boutique')}>Ma boutique</button>}
+        </div>
         {isAdmin && <p style={s.adminHint}>👑 Admin — Les univers disponibles apparaissent en haut</p>}
       </div>
 
@@ -306,11 +323,15 @@ const s = {
   adminTag:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', color:'white', fontSize:11, padding:'3px 10px', borderRadius:20, fontWeight:700, display:'inline-block' },
   hr:{ border:'none', borderTop:'1px solid #eee', margin:'10px 0' },
   ddBtn:{ background:'none', border:'none', color:'#e74c3c', cursor:'pointer', fontSize:14, padding:'4px 0', width:'100%', textAlign:'left' },
+  ddBtnDark:{ background:'none', border:'none', color:'#333', cursor:'pointer', fontSize:14, padding:'5px 0', width:'100%', textAlign:'left', fontWeight:600 },
   loginBtn:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', color:'white', border:'none', borderRadius:20, padding:'9px 18px', fontWeight:700, cursor:'pointer', fontSize:14, fontFamily:"'Outfit',sans-serif" },
   hero:{ textAlign:'center', padding:'40px 20px 16px' },
   heroT:{ fontFamily:"'Bebas Neue',cursive", fontSize:48, letterSpacing:2, color:'#1a1a2e', margin:0 },
   heroS:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' },
   heroSub:{ color:'#888', fontSize:15, marginTop:10 },
+  heroActions:{ display:'flex', gap:10, justifyContent:'center', alignItems:'center', flexWrap:'wrap', marginTop:16 },
+  heroBtn:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', color:'white', border:'none', borderRadius:20, padding:'9px 16px', fontWeight:700, cursor:'pointer', fontFamily:"'Outfit',sans-serif" },
+  heroBtnAlt:{ background:'white', color:'#c0392b', border:'2px solid #f0d1c9', borderRadius:20, padding:'7px 16px', fontWeight:700, cursor:'pointer', fontFamily:"'Outfit',sans-serif" },
   adminHint:{ marginTop:12, fontSize:13, color:'#e67e22', fontWeight:600, background:'#fff8f0', display:'inline-block', padding:'6px 16px', borderRadius:20 },
   sectionLabel:{ fontSize:13, fontWeight:700, color:'#27ae60', padding:'8px 20px 4px', textTransform:'uppercase', letterSpacing:1 },
   sectionDivider:{ gridColumn:'1 / -1', fontSize:13, fontWeight:700, color:'#999', padding:'12px 4px 4px', textTransform:'uppercase', letterSpacing:1, borderTop:'1px solid #e8e8e8', marginTop:8 },

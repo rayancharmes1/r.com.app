@@ -447,7 +447,6 @@ export default function ShopPage() {
               onClick={()=>setActiveTab(t.k)}>{t.l}</button>
           ))}
         </div>
-      )}
 
       {/* ── SEARCH + GRID TOGGLE ── */}
       <div style={s.searchW}>
