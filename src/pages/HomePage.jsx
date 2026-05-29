@@ -4,6 +4,7 @@ import { ref, onValue, push, update, remove } from 'firebase/database';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getAllShops } from '../firebaseDb';
 import RcomLogo from '../components/RcomLogo';
 
 const DEFAULTS = [
@@ -38,6 +39,7 @@ export default function HomePage() {
   const { user, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [disciplines, setDisciplines] = useState([]);
+  const [userShops, setUserShops] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [nd, setNd] = useState({ name:'', icon:'', color:'#c0392b', description:'' });
   const [ndImage, setNdImage] = useState('');
@@ -67,6 +69,12 @@ export default function HomePage() {
         return a.available ? -1 : 1;
       });
       setDisciplines(all);
+    });
+  }, []);
+
+  useEffect(() => {
+    getAllShops().then(shops => {
+      setUserShops(shops.filter(shop => shop.active));
     });
   }, []);
 
@@ -126,6 +134,10 @@ export default function HomePage() {
 
   const go = (disc) => {
     if (disc.available) navigate(`/shop/${disc.fbKey || disc.id}`);
+  };
+
+  const goShop = (shop) => {
+    navigate(`/boutique/${shop.id}`);
   };
 
   return (
@@ -253,6 +265,35 @@ export default function HomePage() {
             </React.Fragment>
           );
         })}
+
+        {userShops.length > 0 && (
+          <div style={s.sectionDivider}>
+            Boutiques des vendeurs
+          </div>
+        )}
+
+        {userShops.map(shop => (
+          <div key={`user-shop-${shop.id}`} style={s.card}>
+            <div
+              style={{ ...s.cardCover, background: 'linear-gradient(135deg, #2c3e5033, #16a08522)' }}
+              onClick={() => goShop(shop)}
+            >
+              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', color:'#2c3e50' }}>
+                <span style={{ fontSize:40 }}>🏪</span>
+              </div>
+              <span style={{ ...s.availBadge, background:'#16a085' }}>
+                Boutique
+              </span>
+            </div>
+            <div style={s.cardBody} onClick={() => goShop(shop)}>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{ fontSize:20 }}>🏪</span>
+                <h3 style={{ ...s.cardName, color:'#2c3e50' }}>{shop.name}</h3>
+              </div>
+              <p style={s.cardDesc}>Boutique de {shop.ownerName || 'vendeur R.COM'}</p>
+            </div>
+          </div>
+        ))}
 
         {/* ADD NEW UNIVERSE (admin) */}
         {isAdmin && (
