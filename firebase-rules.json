@@ -1,31 +1,43 @@
 {
   "rules": {
+    // ── Articles admin (boutique principale) ──────────────────────────────────
     "articles": {
-      ".read": true,
-      ".write": "auth != null && auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'"
+      ".read": "auth != null",
+      ".write": "auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'"
     },
+
+    // ── Disciplines ──────────────────────────────────────────────────────────
     "disciplines": {
-      ".read": true,
-      ".write": "auth != null && auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'"
+      ".read": "auth != null",
+      ".write": "auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'"
     },
+
+    // ── Profils utilisateurs ──────────────────────────────────────────────────
     "users": {
-      ".read": "auth != null && auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'",
       "$uid": {
-        ".read": "auth != null && ($uid === auth.uid || auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1')",
-        ".write": "auth != null && ($uid === auth.uid || auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1')"
+        ".read": "$uid === auth.uid || auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'",
+        ".write": "$uid === auth.uid || auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'"
       }
     },
+
+    // ── Boutiques (méta-données) ──────────────────────────────────────────────
+    // Lecture : tout utilisateur connecté
+    // Création/modification : ADMIN uniquement (shopId = ownerUid, géré côté admin)
+    // Un propriétaire peut modifier le NOM de sa boutique uniquement
     "shops": {
-      ".read": true,
+      ".read": "auth != null",
       "$shopId": {
-        ".write": "auth != null && auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'"
+        ".write": "auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1' || auth.uid === $shopId"
       }
     },
+
+    // ── Articles de boutiques ─────────────────────────────────────────────────
+    // Lecture : public (pour que les clients puissent voir sans compte)
+    // Écriture : propriétaire de la boutique OU admin
     "shopArticles": {
       ".read": true,
       "$shopId": {
-        ".write": "auth != null && (auth.uid === $shopId || auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1')",
-        ".validate": "auth != null && (auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1' || newData.numChildren() <= root.child('shops').child($shopId).child('articleLimit').val())"
+        ".write": "auth != null && (auth.uid === $shopId || auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1')"
       }
     }
   }
