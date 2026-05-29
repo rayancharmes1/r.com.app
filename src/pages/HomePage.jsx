@@ -40,6 +40,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [disciplines, setDisciplines] = useState([]);
   const [userShops, setUserShops] = useState([]);
+  const [mixedAvailable, setMixedAvailable] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [nd, setNd] = useState({ name:'', icon:'', color:'#c0392b', description:'' });
   const [ndImage, setNdImage] = useState('');
@@ -74,9 +75,28 @@ export default function HomePage() {
 
   useEffect(() => {
     getAllShops().then(shops => {
-      setUserShops(shops.filter(shop => shop.active));
+      const activeShops = shops.filter(shop => shop.active).map(shop => ({
+        id: `seller-${shop.id}`,
+        shopId: shop.id,
+        name: shop.name,
+        icon: '🏪',
+        color: '#16a085',
+        available: true,
+        description: `Boutique de ${shop.ownerName || 'vendeur R.COM'}`,
+        isSellerShop: true,
+      }));
+      setUserShops(activeShops);
     });
   }, []);
+
+  useEffect(() => {
+    const available = [...disciplines.filter(d => d.available), ...userShops];
+    for (let i = available.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [available[i], available[j]] = [available[j], available[i]];
+    }
+    setMixedAvailable(available);
+  }, [disciplines, userShops]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -133,11 +153,11 @@ export default function HomePage() {
   };
 
   const go = (disc) => {
+    if (disc.isSellerShop) {
+      navigate(`/boutique/${disc.shopId}`);
+      return;
+    }
     if (disc.available) navigate(`/shop/${disc.fbKey || disc.id}`);
-  };
-
-  const goShop = (shop) => {
-    navigate(`/boutique/${shop.id}`);
   };
 
   return (
@@ -201,9 +221,10 @@ export default function HomePage() {
 
       {/* UNIVERSE GRID */}
       <div style={s.grid}>
-        {disciplines.map((d, i) => {
+        {[...mixedAvailable, ...disciplines.filter(d => !d.available)].map((d, i) => {
           // Insert "Coming soon" label before first unavailable
-          const prevAvail = i > 0 ? disciplines[i-1].available : true;
+          const mixedDisciplines = [...mixedAvailable, ...disciplines.filter(x => !x.available)];
+          const prevAvail = i > 0 ? mixedDisciplines[i-1].available : true;
           const showComingLabel = !d.available && prevAvail && disciplines.some(x => !x.available);
 
           return (
@@ -265,35 +286,6 @@ export default function HomePage() {
             </React.Fragment>
           );
         })}
-
-        {userShops.length > 0 && (
-          <div style={s.sectionDivider}>
-            Boutiques des vendeurs
-          </div>
-        )}
-
-        {userShops.map(shop => (
-          <div key={`user-shop-${shop.id}`} style={s.card}>
-            <div
-              style={{ ...s.cardCover, background: 'linear-gradient(135deg, #2c3e5033, #16a08522)' }}
-              onClick={() => goShop(shop)}
-            >
-              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', height:'100%', color:'#2c3e50' }}>
-                <span style={{ fontSize:40 }}>🏪</span>
-              </div>
-              <span style={{ ...s.availBadge, background:'#16a085' }}>
-                Boutique
-              </span>
-            </div>
-            <div style={s.cardBody} onClick={() => goShop(shop)}>
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <span style={{ fontSize:20 }}>🏪</span>
-                <h3 style={{ ...s.cardName, color:'#2c3e50' }}>{shop.name}</h3>
-              </div>
-              <p style={s.cardDesc}>Boutique de {shop.ownerName || 'vendeur R.COM'}</p>
-            </div>
-          </div>
-        ))}
 
         {/* ADD NEW UNIVERSE (admin) */}
         {isAdmin && (
