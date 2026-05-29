@@ -46,10 +46,15 @@ export default function BoutiquePage() {
 
   return (
     <div style={s.page}>
+      {shop.bannerUrl && <img src={shop.bannerUrl} alt="" style={s.banner} />}
       <header style={s.header}>
-        <div>
-          <h1 style={s.title}>{shop.name}</h1>
-          <p style={s.sub}>par {shop.ownerName}</p>
+        <div style={s.identity}>
+          {shop.imageUrl && <img src={shop.imageUrl} alt="" style={s.logo} />}
+          <div>
+            <h1 style={s.title}>{shop.name}</h1>
+            <p style={s.sub}>par {shop.ownerName}</p>
+            {shop.description && <p style={s.descIntro}>{shop.description}</p>}
+          </div>
         </div>
         <button style={s.secondary} onClick={() => navigate('/boutiques')}>Boutiques</button>
       </header>
@@ -90,8 +95,12 @@ export default function BoutiquePage() {
 const s = {
   page: { minHeight: '100vh', background: '#f4f5f7', padding: '16px 16px 110px' },
   header: { maxWidth: 1100, margin: '0 auto 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  banner: { width: '100%', maxWidth: 1100, height: 190, objectFit: 'cover', display: 'block', borderRadius: 16, margin: '0 auto 16px' },
+  identity: { display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 },
+  logo: { width: 58, height: 58, borderRadius: 14, objectFit: 'cover', flexShrink: 0 },
   title: { fontFamily: "'Bebas Neue',cursive", fontSize: 34, letterSpacing: 1, margin: 0, color: '#1a1a2e' },
   sub: { margin: '6px 0 0', color: '#777', fontSize: 14 },
+  descIntro: { margin: '6px 0 0', color: '#555', fontSize: 14, lineHeight: 1.45, maxWidth: 620 },
   grid: { maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 14 },
   card: { background: 'white', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 14px rgba(0,0,0,0.08)' },
   image: { width: '100%', height: 170, objectFit: 'cover', display: 'block' },
