@@ -28,6 +28,7 @@ export async function authorizeShop(userData) {
     ownerEmail: userData.email || '',
     ownerName,
     name: `Boutique de ${ownerName}`,
+    orderPhone: WHATSAPP,
     articleLimit: DEFAULT_ARTICLE_LIMIT,
     active: true,
     createdAt: Date.now(),
@@ -38,6 +39,11 @@ export async function authorizeShop(userData) {
     shopId: userData.uid,
     articleLimit: DEFAULT_ARTICLE_LIMIT,
   });
+}
+
+export async function updateShopOrderPhone(shopId, orderPhone) {
+  const cleaned = String(orderPhone || '').replace(/\D/g, '');
+  await update(ref(db, `shops/${shopId}`), { orderPhone: cleaned, updatedAt: Date.now() });
 }
 
 export async function updateShopLimit(shopId, articleLimit) {
@@ -97,11 +103,12 @@ export async function deleteShopArticle(shopId, articleId) {
   await remove(ref(db, `shopArticles/${shopId}/${articleId}`));
 }
 
-export function buildWhatsAppOrderLink(items, shopName = 'R.COM') {
+export function buildWhatsAppOrderLink(items, shopName = 'R.COM', orderPhone = WHATSAPP) {
   const lines = items
     .map(item => `• ${item.name} x${item.qty} = ${(item.price * item.qty).toLocaleString()} FCFA`)
     .join('\n');
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const message = `Bonjour R.COM\n\nCommande ${shopName} :\n\n${lines}\n\nTOTAL : ${total.toLocaleString()} FCFA`;
-  return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
+  const phone = String(orderPhone || WHATSAPP).replace(/\D/g, '');
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }

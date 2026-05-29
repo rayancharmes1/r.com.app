@@ -30,7 +30,7 @@ export default function BoutiquePage() {
 
   const sendOrder = () => {
     if (cart.length === 0) return;
-    window.open(buildWhatsAppOrderLink(cart, shop?.name), '_blank');
+    window.open(buildWhatsAppOrderLink(cart, shop?.name, shop?.orderPhone), '_blank');
     setCart([]);
   };
 

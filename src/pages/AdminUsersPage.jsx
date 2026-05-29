@@ -7,6 +7,7 @@ import {
   deleteUserShop,
   getAllShops,
   getAllUsers,
+  updateShopOrderPhone,
   updateShopLimit,
 } from '../firebaseDb';
 
@@ -17,6 +18,7 @@ export default function AdminUsersPage() {
   const [shops, setShops] = useState({});
   const [search, setSearch] = useState('');
   const [limits, setLimits] = useState({});
+  const [phones, setPhones] = useState({});
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
@@ -62,6 +64,12 @@ export default function AdminUsersPage() {
   const saveLimit = async uid => {
     await updateShopLimit(uid, limits[uid] || shops[uid]?.articleLimit || 15);
     setMessage('Limite mise a jour');
+    await load();
+  };
+
+  const savePhone = async uid => {
+    await updateShopOrderPhone(uid, phones[uid] ?? shops[uid]?.orderPhone ?? '');
+    setMessage('Numero WhatsApp mis a jour');
     await load();
   };
 
@@ -129,6 +137,17 @@ export default function AdminUsersPage() {
                       />
                       <button style={s.smallPrimary} onClick={() => saveLimit(user.uid)}>Modifier</button>
                     </div>
+                    <div style={s.phoneRow}>
+                      <span style={s.label}>WhatsApp commandes</span>
+                      <input
+                        style={s.phoneInput}
+                        type="tel"
+                        placeholder="Ex: 2250160672966"
+                        value={phones[user.uid] ?? shop.orderPhone ?? ''}
+                        onChange={event => setPhones(prev => ({ ...prev, [user.uid]: event.target.value }))}
+                      />
+                      <button style={s.smallPrimary} onClick={() => savePhone(user.uid)}>Enregistrer</button>
+                    </div>
                     <button style={s.danger} onClick={() => removeShop(user)}>Supprimer la boutique</button>
                   </div>
                 ) : (
@@ -160,8 +179,10 @@ const s = {
   badge: { alignSelf: 'flex-start', background: '#e8f8e8', color: '#217a31', borderRadius: 20, padding: '4px 10px', fontSize: 12, fontWeight: 800 },
   shopName: { margin: 0, color: '#333', fontWeight: 700 },
   limitRow: { display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: 8 },
+  phoneRow: { display: 'grid', gridTemplateColumns: '1fr', alignItems: 'center', gap: 8 },
   label: { fontSize: 13, color: '#666' },
   limitInput: { minWidth: 0, border: '2px solid #eee', borderRadius: 10, padding: 9, fontFamily: "'Outfit',sans-serif" },
+  phoneInput: { width: '100%', boxSizing: 'border-box', border: '2px solid #eee', borderRadius: 10, padding: 9, fontFamily: "'Outfit',sans-serif" },
   primary: { background: 'linear-gradient(135deg,#c0392b,#e67e22)', color: 'white', border: 'none', borderRadius: 12, padding: '11px 14px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" },
   smallPrimary: { background: '#2980b9', color: 'white', border: 'none', borderRadius: 10, padding: '9px 10px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" },
   secondary: { background: 'white', color: '#444', border: '2px solid #eee', borderRadius: 12, padding: '10px 14px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" },
