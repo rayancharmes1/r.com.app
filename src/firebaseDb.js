@@ -46,6 +46,22 @@ export async function updateShopOrderPhone(shopId, orderPhone) {
   await update(ref(db, `shops/${shopId}`), { orderPhone: cleaned, updatedAt: Date.now() });
 }
 
+export async function updateShopDetails(shopId, details) {
+  if (!shopId || shopId === ADMIN_UID) return;
+  const payload = {
+    name: String(details.name || '').trim() || 'Boutique R.COM',
+    description: String(details.description || '').trim(),
+    imageUrl: details.imageUrl || '',
+    bannerUrl: details.bannerUrl || '',
+    active: !!details.active,
+    updatedAt: Date.now(),
+  };
+  if (details.orderPhone !== undefined) {
+    payload.orderPhone = String(details.orderPhone || '').replace(/\D/g, '');
+  }
+  await update(ref(db, `shops/${shopId}`), payload);
+}
+
 export async function updateShopLimit(shopId, articleLimit) {
   const limit = Math.max(1, Number(articleLimit) || DEFAULT_ARTICLE_LIMIT);
   await update(ref(db, `shops/${shopId}`), { articleLimit: limit, updatedAt: Date.now() });
