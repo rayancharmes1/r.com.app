@@ -246,11 +246,11 @@ export default function ShopPage() {
 
   useEffect(() => {
     setLoading(true);
-    let oldArts = [], newArts = [], loaded = 0;
-    const total = discId === 'market' ? 2 : 1;
+    let oldArts = [], legacyArts = [], newArts = [], loaded = 0;
+    const total = discId === 'market' ? 3 : 1;
     const merge = () => {
       loaded++;
-      const combined = [...oldArts, ...newArts];
+      const combined = [...oldArts, ...legacyArts, ...newArts];
       const seen = new Set();
       const deduped = combined.filter(a => { if(seen.has(a.id)) return false; seen.add(a.id); return true; });
       // Shuffle randomly each load
@@ -262,9 +262,16 @@ export default function ShopPage() {
       if(loaded >= total) setLoading(false);
     };
     let unsubOld = ()=>{};
+    let unsubLegacy = ()=>{};
     if(discId === 'market') {
+      // Anciens articles (chemin articles/)
       unsubOld = onValue(ref(db,'articles'), snap => {
         oldArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
+        merge();
+      });
+      // Articles legacy (chemin shop/market/articles)
+      unsubLegacy = onValue(ref(db,'shop/market/articles'), snap => {
+        legacyArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
         merge();
       });
     }
@@ -272,7 +279,7 @@ export default function ShopPage() {
       newArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
       merge();
     });
-    return () => { unsubOld(); unsubNew(); };
+    return () => { unsubOld(); unsubLegacy(); unsubNew(); };
   }, [discId]);
 
   useEffect(() => { setCarIdx(0); }, [selected]);
