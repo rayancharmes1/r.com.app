@@ -268,7 +268,7 @@ export default function ShopPage() {
         merge();
       });
     }
-    const unsubNew = onValue(ref(db,`shop/${discId}/articles`), snap => {
+    const unsubNew = onValue(ref(db,`shopArticles/${discId}`), snap => {
       newArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
       merge();
     });
@@ -323,8 +323,8 @@ export default function ShopPage() {
         isPromo:!!form.isPromo, images:previews, imageUrl:previews[0]||'',
         createdAt:editId?(form.createdAt||Date.now()):Date.now(), updatedAt:Date.now(),
       };
-      if(editId){ await update(ref(db,`shop/${discId}/articles/${editId}`),data); }
-      else { await push(ref(db,`shop/${discId}/articles`),data); }
+      if(editId){ await update(ref(db,`shopArticles/${discId}/${editId}`),data); }
+      else { await push(ref(db,`shopArticles/${discId}`),data); }
       resetForm();
     } catch(e){alert('Erreur : '+e.message);}
     setUploading(false);
@@ -332,7 +332,7 @@ export default function ShopPage() {
 
   const handleDelete = async (a) => {
     if(!window.confirm('Supprimer cet article ?')) return;
-    try{await remove(ref(db,`shop/${discId}/articles/${a.id}`));}catch(_){}
+    try{await remove(ref(db,`shopArticles/${discId}/${a.id}`));}catch(_){}
     try{await remove(ref(db,`articles/${a.id}`));}catch(_){}
   };
 
@@ -345,7 +345,7 @@ export default function ShopPage() {
   };
 
   const handleOutOfStock = async (a) => {
-    try{await update(ref(db,`shop/${discId}/articles/${a.id}`),{stock:0});}catch(_){}
+    try{await update(ref(db,`shopArticles/${discId}/${a.id}`),{stock:0});}catch(_){}
     try{await update(ref(db,`articles/${a.id}`),{stock:0});}catch(_){}
   };
 
