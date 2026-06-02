@@ -246,40 +246,38 @@ export default function ShopPage() {
 
   useEffect(() => {
     setLoading(true);
-    let oldArts = [], legacyArts = [], newArts = [], loaded = 0;
-    const total = discId === 'market' ? 3 : 1;
-    const merge = () => {
-      loaded++;
-      const combined = [...oldArts, ...legacyArts, ...newArts];
+    // Stocker les articles de chaque source indépendamment
+    let sourceA = []; // articles/
+    let sourceB = []; // shop/market/articles (legacy)
+    let sourceC = []; // shopArticles/discId
+
+    const rebuild = () => {
+      const combined = [...sourceA, ...sourceB, ...sourceC];
       const seen = new Set();
       const deduped = combined.filter(a => { if(seen.has(a.id)) return false; seen.add(a.id); return true; });
-      // Shuffle randomly each load
-      for (let i = deduped.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deduped[i], deduped[j]] = [deduped[j], deduped[i]];
-      }
       setArticles(deduped);
-      if(loaded >= total) setLoading(false);
+      setLoading(false); // On affiche dès qu'une source répond
     };
-    let unsubOld = ()=>{};
-    let unsubLegacy = ()=>{};
+
+    const unsubs = [];
+
     if(discId === 'market') {
-      // Anciens articles (chemin articles/)
-      unsubOld = onValue(ref(db,'articles'), snap => {
-        oldArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
-        merge();
-      });
-      // Articles legacy (chemin shop/market/articles)
-      unsubLegacy = onValue(ref(db,'shop/market/articles'), snap => {
-        legacyArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
-        merge();
-      });
+      unsubs.push(onValue(ref(db,'articles'), snap => {
+        sourceA = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
+        rebuild();
+      }));
+      unsubs.push(onValue(ref(db,'shop/market/articles'), snap => {
+        sourceB = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
+        rebuild();
+      }));
     }
-    const unsubNew = onValue(ref(db,`shopArticles/${discId}`), snap => {
-      newArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
-      merge();
-    });
-    return () => { unsubOld(); unsubLegacy(); unsubNew(); };
+
+    unsubs.push(onValue(ref(db,`shopArticles/${discId}`), snap => {
+      sourceC = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
+      rebuild();
+    }));
+
+    return () => unsubs.forEach(u => u());
   }, [discId]);
 
   useEffect(() => { setCarIdx(0); }, [selected]);
