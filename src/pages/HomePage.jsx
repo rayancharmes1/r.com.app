@@ -157,7 +157,7 @@ export default function HomePage() {
       navigate(`/boutique/${disc.shopId}`);
       return;
     }
-    if (disc.available) navigate(`/shop/${disc.fbKey || disc.id}`);
+    if (disc.available) navigate(`/shop/${disc.id || disc.fbKey}`);
   };
 
   return (
