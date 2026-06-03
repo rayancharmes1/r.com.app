@@ -9,6 +9,7 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import MyShopPage from './pages/MyShopPage';
 import BoutiquesPage from './pages/BoutiquesPage';
 import BoutiquePage from './pages/BoutiquePage';
+import MarketPage from './pages/MarketPage';
 import InstallBanner from './components/InstallBanner';
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/market" element={<MarketPage />} />
             <Route path="/shop/:discId" element={<ShopPage />} />
             <Route path="/admin/comptes" element={<AdminUsersPage />} />
             <Route path="/ma-boutique" element={<MyShopPage />} />
