@@ -189,6 +189,8 @@ export default function ShopPage() {
   const { getCart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
   const navigate = useNavigate();
   const cart = getCart(discId);
+  const sellerShopId = discId?.startsWith('seller-') ? discId.replace('seller-', '') : null;
+  const isSellerShop = !!sellerShopId;
 
   const [disc, setDisc] = useState(DISC_DEFAULTS[discId] || null);
   const [articles, setArticles] = useState([]);
@@ -239,46 +241,63 @@ export default function ShopPage() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
+    if (isSellerShop) {
+      const r = ref(db, `shops/${sellerShopId}`);
+      return onValue(r, snap => {
+        if (snap.exists()) {
+          const shop = snap.val();
+          setDisc({
+            ...shop,
+            name: shop.name || 'Boutique R.COM',
+            icon: '🏪',
+            color: shop.color || '#16a085',
+            available: true,
+          });
+        }
+      });
+    }
     if(DISC_DEFAULTS[discId]){ setDisc(DISC_DEFAULTS[discId]); return; }
     const r = ref(db, `disciplines/${discId}`);
     return onValue(r, snap => { if(snap.exists()) setDisc(snap.val()); });
-  }, [discId]);
+  }, [discId, isSellerShop, sellerShopId]);
 
   useEffect(() => {
     setLoading(true);
-    // Stocker les articles de chaque source indépendamment
-    let sourceA = []; // articles/
-    let sourceB = []; // shop/market/articles (legacy)
-    let sourceC = []; // shopArticles/discId
-
-    const rebuild = () => {
-      const combined = [...sourceA, ...sourceB, ...sourceC];
+    let oldArts = [], newArts = [], loaded = 0;
+    const total = discId === 'market' && !isSellerShop ? 2 : 1;
+    const merge = () => {
+      loaded++;
+      const combined = [...oldArts, ...newArts];
       const seen = new Set();
       const deduped = combined.filter(a => { if(seen.has(a.id)) return false; seen.add(a.id); return true; });
+      // Shuffle randomly each load
+      for (let i = deduped.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deduped[i], deduped[j]] = [deduped[j], deduped[i]];
+      }
       setArticles(deduped);
-      setLoading(false); // On affiche dès qu'une source répond
+      if(loaded >= total) setLoading(false);
     };
-
-    const unsubs = [];
-
-    if(discId === 'market') {
-      unsubs.push(onValue(ref(db,'articles'), snap => {
-        sourceA = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
-        rebuild();
-      }));
-      unsubs.push(onValue(ref(db,'shop/market/articles'), snap => {
-        sourceB = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
-        rebuild();
-      }));
+    let unsubOld = ()=>{};
+    if(discId === 'market' && !isSellerShop) {
+      unsubOld = onValue(ref(db,'articles'), snap => {
+        oldArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
+        merge();
+      }, () => {
+        oldArts = [];
+        merge();
+      });
     }
-
-    unsubs.push(onValue(ref(db,`shopArticles/${discId}`), snap => {
-      sourceC = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
-      rebuild();
-    }));
-
-    return () => unsubs.forEach(u => u());
-  }, [discId]);
+    const articlePath = isSellerShop ? `shopArticles/${sellerShopId}` : `shop/${discId}/articles`;
+    const unsubNew = onValue(ref(db, articlePath), snap => {
+      newArts = snap.exists() ? Object.entries(snap.val()).map(([id,v])=>({id,...v})) : [];
+      merge();
+    }, () => {
+      newArts = [];
+      merge();
+    });
+    return () => { unsubOld(); unsubNew(); };
+  }, [discId, isSellerShop, sellerShopId]);
 
   useEffect(() => { setCarIdx(0); }, [selected]);
 
@@ -304,7 +323,8 @@ export default function ShopPage() {
     if(!user){setShowCart(false);setShowLoginWall(true);return;}
     const lines = cart.map(i=>`• ${i.article.name} x${i.quantity} = ${(i.article.price*i.quantity).toLocaleString()} FCFA`).join('\n');
     const msg = `Bonjour R.COM 👋\n\nCommande *${disc?.name||'R.COM'}* :\n\n${lines}\n\n💰 *TOTAL : ${totalPrice(discId).toLocaleString()} FCFA*\n\nClient : ${user.displayName||user.email}`;
-    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`,'_blank');
+    const orderPhone = String(disc?.orderPhone || WHATSAPP).replace(/\D/g, '');
+    window.open(`https://wa.me/${orderPhone}?text=${encodeURIComponent(msg)}`,'_blank');
     clearCart(discId); setShowCart(false);
     setOrderOk(true); setTimeout(()=>setOrderOk(false),4000);
   };
@@ -319,6 +339,9 @@ export default function ShopPage() {
     if(!form.name.trim()||!form.price){alert('Nom et prix obligatoires.');return;}
     setUploading(true);
     try {
+      if (isSellerShop && !editId && articles.length >= (disc?.articleLimit || 15)) {
+        throw new Error(`Limite atteinte : ${disc?.articleLimit || 15} articles maximum.`);
+      }
       const data = {
         name:form.name.trim(), category:form.category?.trim()||'',
         price:parseFloat(form.price), oldPrice:form.oldPrice?parseFloat(form.oldPrice):null,
@@ -328,8 +351,9 @@ export default function ShopPage() {
         isPromo:!!form.isPromo, images:previews, imageUrl:previews[0]||'',
         createdAt:editId?(form.createdAt||Date.now()):Date.now(), updatedAt:Date.now(),
       };
-      if(editId){ await update(ref(db,`shopArticles/${discId}/${editId}`),data); }
-      else { await push(ref(db,`shopArticles/${discId}`),data); }
+      const articlePath = isSellerShop ? `shopArticles/${sellerShopId}` : `shop/${discId}/articles`;
+      if(editId){ await update(ref(db,`${articlePath}/${editId}`),data); }
+      else { await push(ref(db, articlePath),data); }
       resetForm();
     } catch(e){alert('Erreur : '+e.message);}
     setUploading(false);
@@ -337,8 +361,9 @@ export default function ShopPage() {
 
   const handleDelete = async (a) => {
     if(!window.confirm('Supprimer cet article ?')) return;
-    try{await remove(ref(db,`shopArticles/${discId}/${a.id}`));}catch(_){}
-    try{await remove(ref(db,`articles/${a.id}`));}catch(_){}
+    const articlePath = isSellerShop ? `shopArticles/${sellerShopId}` : `shop/${discId}/articles`;
+    try{await remove(ref(db,`${articlePath}/${a.id}`));}catch(_){}
+    if(!isSellerShop) try{await remove(ref(db,`articles/${a.id}`));}catch(_){}
   };
 
   const handleEdit = (a) => {
@@ -350,8 +375,9 @@ export default function ShopPage() {
   };
 
   const handleOutOfStock = async (a) => {
-    try{await update(ref(db,`shopArticles/${discId}/${a.id}`),{stock:0});}catch(_){}
-    try{await update(ref(db,`articles/${a.id}`),{stock:0});}catch(_){}
+    const articlePath = isSellerShop ? `shopArticles/${sellerShopId}` : `shop/${discId}/articles`;
+    try{await update(ref(db,`${articlePath}/${a.id}`),{stock:0});}catch(_){}
+    if(!isSellerShop) try{await update(ref(db,`articles/${a.id}`),{stock:0});}catch(_){}
   };
 
   const resetForm = () => {
@@ -360,6 +386,7 @@ export default function ShopPage() {
   };
 
   const color = disc?.color||'#c0392b';
+  const canManage = isAdmin || (isSellerShop && user?.uid === sellerShopId);
   const tItems = totalItems(discId);
   const tPrice = totalPrice(discId);
 
@@ -404,7 +431,7 @@ export default function ShopPage() {
           ):(
             <button style={{...s.loginBtn,background:color}} onClick={()=>navigate('/login')}>Connexion</button>
           )}
-          {isAdmin&&<button style={{...s.addBtn,background:color}} onClick={()=>{resetForm();setShowForm(true);}}>+ Article</button>}
+          {canManage&&<button style={{...s.addBtn,background:color}} onClick={()=>{resetForm();setShowForm(true);}}>+ Article</button>}
         </div>
       </header>
 
@@ -551,14 +578,14 @@ export default function ShopPage() {
                       </div>
                     )
                   )}
-                  {isAdmin&&!compact&&(
+                  {canManage&&!compact&&(
                     <div style={s.adminBtns}>
                       <button style={s.editBtn} onClick={()=>handleEdit(a)}>✏️</button>
                       <button style={s.epuisBtn} onClick={()=>handleOutOfStock(a)}>📦 Épuisé</button>
                       <button style={s.delBtn2} onClick={()=>handleDelete(a)}>🗑️</button>
                     </div>
                   )}
-                  {isAdmin&&compact&&(
+                  {canManage&&compact&&(
                     <div style={{display:'flex',gap:3,marginTop:4}}>
                       <button style={{...s.editBtn,padding:'2px 4px',fontSize:10}} onClick={()=>handleEdit(a)}>✏️</button>
                       <button style={{...s.delBtn2,padding:'2px 4px',fontSize:10}} onClick={()=>handleDelete(a)}>🗑️</button>
@@ -714,7 +741,7 @@ export default function ShopPage() {
       {orderOk&&<div style={s.toast}>✅ Commande envoyée sur WhatsApp !</div>}
 
       {/* ── ADMIN FORM ── */}
-      {isAdmin&&showForm&&(
+      {canManage&&showForm&&(
         <div style={s.overlay}>
           <div style={s.formModal}>
             <h2 style={s.formTitle}>{editId?'Modifier':'Nouvel'} Article — <span style={{color}}>{disc?.name}</span></h2>

@@ -154,11 +154,10 @@ export default function HomePage() {
 
   const go = (disc) => {
     if (disc.isSellerShop) {
-      navigate(`/boutique/${disc.shopId}`);
+      navigate(`/shop/seller-${disc.shopId}`);
       return;
     }
-    if (disc.id === 'market') { navigate('/market'); return; }
-    if (disc.available) navigate(`/shop/${disc.id || disc.fbKey}`);
+    if (disc.available) navigate(`/shop/${disc.fbKey || disc.id}`);
   };
 
   return (
@@ -187,7 +186,7 @@ export default function HomePage() {
                     </button>
                   )}
                   {profile?.hasShop && (
-                    <button style={s.ddBtnDark} onClick={() => navigate('/ma-boutique')}>
+                    <button style={s.ddBtnDark} onClick={() => navigate(`/shop/seller-${profile.shopId}`)}>
                       Ma boutique
                     </button>
                   )}
@@ -210,7 +209,7 @@ export default function HomePage() {
         <p style={s.heroSub}>Choisissez votre univers pour découvrir nos offres</p>
         <div style={s.heroActions}>
           <button style={s.heroBtn} onClick={() => navigate('/boutiques')}>Voir les boutiques</button>
-          {profile?.hasShop && <button style={s.heroBtnAlt} onClick={() => navigate('/ma-boutique')}>Ma boutique</button>}
+          {profile?.hasShop && <button style={s.heroBtnAlt} onClick={() => navigate(`/shop/seller-${profile.shopId}`)}>Ma boutique</button>}
         </div>
         {isAdmin && <p style={s.adminHint}>👑 Admin — Les univers disponibles apparaissent en haut</p>}
       </div>
