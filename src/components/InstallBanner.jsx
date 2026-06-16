@@ -46,7 +46,7 @@ export default function InstallBanner() {
   return (
     <div style={s.banner}>
       <div style={s.left}>
-        <div style={s.logoMini}>R</div>
+        <div style={s.logoMini} />
         <div>
           <p style={s.title}>Installer R.COM</p>
           <p style={s.sub}>
@@ -80,9 +80,11 @@ const s = {
   left: { display: 'flex', alignItems: 'center', gap: 12, flex: 1 },
   logoMini: {
     width: 40, height: 40, borderRadius: 10,
-    background: 'linear-gradient(135deg,#c0392b,#e67e22)',
-    color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontFamily: "'Bebas Neue',cursive", fontSize: 22, flexShrink: 0,
+    backgroundImage: 'url(/rcom-logo.jpg)',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '430%',
+    backgroundPosition: '50% 39%',
+    flexShrink: 0,
   },
   title: { fontWeight: 700, fontSize: 14, margin: 0, color: '#111' },
   sub: { fontSize: 12, color: '#888', margin: '2px 0 0', lineHeight: 1.4 },
