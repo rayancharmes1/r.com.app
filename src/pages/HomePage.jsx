@@ -73,21 +73,25 @@ export default function HomePage() {
     });
   }, []);
 
-  useEffect(() => {
-    getAllShops().then(shops => {
-      const activeShops = shops.filter(shop => shop.active).map(shop => ({
-        id: `seller-${shop.id}`,
-        shopId: shop.id,
-        name: shop.name,
-        icon: '🏪',
-        color: '#16a085',
-        available: true,
-        description: `Boutique de ${shop.ownerName || 'vendeur R.COM'}`,
-        isSellerShop: true,
-      }));
-      setUserShops(activeShops);
-    });
-  }, []);
+ useEffect(() => {
+  const r = ref(db, 'shops');
+  return onValue(r, snap => {
+    if (!snap.exists()) { setUserShops([]); return; }
+    const shops = Object.entries(snap.val()).map(([id, data]) => ({ id, ...data }));
+    const activeShops = shops.filter(shop => shop.active).map(shop => ({
+      id: `seller-${shop.id}`,
+      shopId: shop.id,
+      name: shop.name,
+      icon: '🏪',
+      color: '#16a085',
+      available: true,
+      description: `Boutique de ${shop.ownerName || 'vendeur R.COM'}`,
+      isSellerShop: true,
+      coverImage: shop.imageUrl || '',
+    }));
+    setUserShops(activeShops);
+  });
+}, []);
 
   useEffect(() => {
     const available = [...disciplines.filter(d => d.available), ...userShops];
@@ -114,19 +118,21 @@ export default function HomePage() {
   };
 
   // Upload image for a discipline
-  const handleDiscImage = async (e, disc) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setUploadingImg(disc.fbKey || disc.id);
-    const compressed = await compressImage(file, 500);
-    if (disc.fbKey) {
-      await update(ref(db, `disciplines/${disc.fbKey}`), { coverImage: compressed });
-    } else {
-      // If not in firebase yet, push it
-      await push(ref(db, 'disciplines'), { ...disc, isDefault:true, coverImage: compressed });
-    }
-    setUploadingImg(null);
-  };
+const handleDiscImage = async (e, disc) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  setUploadingImg(disc.fbKey || disc.id);
+  const compressed = await compressImage(file, 500);
+  if (disc.isSellerShop) {
+    await update(ref(db, `shops/${disc.shopId}`), { imageUrl: compressed, updatedAt: Date.now() });
+  } else if (disc.fbKey) {
+    await update(ref(db, `disciplines/${disc.fbKey}`), { coverImage: compressed });
+  } else {
+    // If not in firebase yet, push it
+    await push(ref(db, 'disciplines'), { ...disc, isDefault:true, coverImage: compressed });
+  }
+  setUploadingImg(null);
+};
 
   // Upload image for new discipline being created
   const handleNewDiscImage = async (e) => {
