@@ -47,6 +47,7 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingImg, setUploadingImg] = useState(null); // fbKey being uploaded
+  const [phoneEdits, setPhoneEdits] = useState({});
 
   useEffect(() => {
     const r = ref(db, 'disciplines');
@@ -116,8 +117,17 @@ export default function HomePage() {
     else await push(ref(db, 'disciplines'), { ...disc, isDefault:true, available:!disc.available });
     setSaving(false);
   };
+  const saveDiscPhone = async (d) => {
+  const key = d.fbKey || d.id;
+  const cleaned = String(phoneEdits[key] ?? d.orderPhone ?? '').replace(/\D/g, '');
+  if (d.fbKey) {
+    await update(ref(db, `disciplines/${d.fbKey}`), { orderPhone: cleaned });
+  } else {
+    await push(ref(db, 'disciplines'), { ...d, isDefault: true, orderPhone: cleaned });
+  }
+};
 
-  // Upload image for a discipline
+
 const handleDiscImage = async (e, disc) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -286,6 +296,22 @@ const handleDiscImage = async (e, disc) => {
                     {!d.isDefault && (
                       <button style={s.delBtn} onClick={() => delDisc(d)}>🗑️</button>
                     )}
+                  </div>
+                )}
+                {isAdmin && !d.isSellerShop && (
+                  <div style={{ ...s.adminRow, gap: 6 }}>
+                    <input
+                      type="tel"
+                      placeholder="Numéro WhatsApp (ex: 2250160672966)"
+                      value={phoneEdits[d.fbKey || d.id] ?? d.orderPhone ?? ''}
+                      onChange={e => setPhoneEdits(p => ({ ...p, [d.fbKey || d.id]: e.target.value }))}
+                      style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #ddd', fontSize: 13 }}
+                    />
+                    <button
+                      style={{ ...s.toggleBtn, background: '#eafaf1', color: '#27ae60' }}
+                      onClick={() => saveDiscPhone(d)}>
+                      💾
+                    </button>
                   </div>
                 )}
               </div>

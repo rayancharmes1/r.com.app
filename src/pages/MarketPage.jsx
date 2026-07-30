@@ -9,7 +9,7 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 
 const MAX_PHOTOS = 4;
-const WHATSAPP_NUMBER = '2250160672966';
+const WHATSAPP_NUMBER_DEFAULT = '2250160672966';
 
 function compressImage(file, maxSize = 500) {
   return new Promise((resolve) => {
@@ -48,6 +48,7 @@ export default function MarketPage() {
   const [showLoginWall, setShowLoginWall] = useState(false);
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [whatsappNumber, setwhatsappNumber] = useState(WHATSAPP_NUMBER_DEFAULT);
 
   // Admin form state
   const [form, setForm] = useState({ name:'', price:'', oldPrice:'', description:'', category:'', stock:'' });
@@ -63,6 +64,14 @@ export default function MarketPage() {
       else setArticles([]);
     });
     return unsub;
+  }, []);
+
+  useEffect(() => {
+    const r = ref(db, 'disciplines/market');
+    return onValue(r, snap => {
+      const phone = snap.exists() ? snap.val().orderPhone : null;
+      setWhatsappNumber(phone || WHATSAPP_NUMBER_DEFAULT);
+    });
   }, []);
 
   useEffect(() => { setCarouselIdx(0); }, [selected]);
@@ -95,7 +104,7 @@ export default function MarketPage() {
 
     const lines = cart.map(i => `• ${i.article.name} x${i.quantity} = ${(i.article.price * i.quantity).toLocaleString()} FCFA`).join('\n');
     const message = `Bonjour R.COM 👋\n\nJe voudrais commander :\n\n${lines}\n\n💰 *TOTAL : ${totalPrice.toLocaleString()} FCFA*\n\nNom : ${user.displayName || user.email}`;
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
     clearCart();
     setShowCart(false);

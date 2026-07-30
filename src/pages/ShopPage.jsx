@@ -256,9 +256,11 @@ export default function ShopPage() {
         }
       });
     }
-    if(DISC_DEFAULTS[discId]){ setDisc(DISC_DEFAULTS[discId]); return; }
     const r = ref(db, `disciplines/${discId}`);
-    return onValue(r, snap => { if(snap.exists()) setDisc(snap.val()); });
+    return onValue(r, snap => {
+      const base = DISC_DEFAULTS[discId] || {};
+      setDisc(snap.exists() ? { ...base, ...snap.val() } : (DISC_DEFAULTS[discId] || null));
+    });
   }, [discId, isSellerShop, sellerShopId]);
 
   useEffect(() => {
