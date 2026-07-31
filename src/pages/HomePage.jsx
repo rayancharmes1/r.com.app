@@ -123,18 +123,18 @@ export default function HomePage() {
     return onValue(r, snap => {
       if (!snap.exists()) { setUserShops([]); return; }
       const shops = Object.entries(snap.val()).map(([id, data]) => ({ id, ...data }));
-      const activeShops = shops.filter(shop => shop.active).map(shop => ({
+      const allShops = shops.map(shop => ({
         id: `seller-${shop.id}`,
         shopId: shop.id,
         name: shop.name,
         icon: '🏪',
         color: '#16a085',
-        available: true,
+        available: !!shop.active,
         description: `Boutique de ${shop.ownerName || 'vendeur R.COM'}`,
         isSellerShop: true,
         coverImage: shop.imageUrl || '',
       }));
-      setUserShops(activeShops);
+      setUserShops(allShops);
     });
   }, []);
 
@@ -146,7 +146,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const available = [...disciplines.filter(d => d.available), ...userShops];
+    const available = [...disciplines.filter(d => d.available), ...userShops.filter(sh => sh.available)];
     for (let i = available.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [available[i], available[j]] = [available[j], available[i]];
@@ -164,8 +164,13 @@ export default function HomePage() {
 
   const toggle = async (disc) => {
     setSaving(true);
-    if (disc.fbKey) await update(ref(db, `disciplines/${disc.fbKey}`), { available: !disc.available });
-    else await push(ref(db, 'disciplines'), { ...disc, isDefault:true, available:!disc.available });
+    if (disc.isSellerShop) {
+      await update(ref(db, `shops/${disc.shopId}`), { active: !disc.available });
+    } else if (disc.fbKey) {
+      await update(ref(db, `disciplines/${disc.fbKey}`), { available: !disc.available });
+    } else {
+      await push(ref(db, 'disciplines'), { ...disc, isDefault:true, available:!disc.available });
+    }
     setSaving(false);
   };
 
@@ -337,11 +342,11 @@ export default function HomePage() {
 
       {/* UNIVERSE GRID */}
       <div style={s.grid}>
-        {[...mixedAvailable, ...disciplines.filter(d => !d.available)].map((d, i) => {
+        {[...mixedAvailable, ...disciplines.filter(d => !d.available), ...userShops.filter(sh => !sh.available)].map((d, i) => {
           // Insert "Coming soon" label before first unavailable
-          const mixedDisciplines = [...mixedAvailable, ...disciplines.filter(x => !x.available)];
+          const mixedDisciplines = [...mixedAvailable, ...disciplines.filter(x => !x.available), ...userShops.filter(sh => !sh.available)];
           const prevAvail = i > 0 ? mixedDisciplines[i-1].available : true;
-          const showComingLabel = !d.available && prevAvail && disciplines.some(x => !x.available);
+          const showComingLabel = !d.available && prevAvail && (disciplines.some(x => !x.available) || userShops.some(sh => !sh.available));
 
           return (
             <React.Fragment key={d.fbKey || d.id || i}>
