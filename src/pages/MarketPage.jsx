@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import RcomLogo from '../components/RcomLogo';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
+import { saveOrder } from '../firebaseDb';
 
 const MAX_PHOTOS = 4;
 const WHATSAPP_NUMBER_DEFAULT = '2250160672966';
@@ -48,7 +49,7 @@ export default function MarketPage() {
   const [showLoginWall, setShowLoginWall] = useState(false);
   const [showOrderSuccess, setShowOrderSuccess] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [whatsappNumber, setwhatsappNumber] = useState(WHATSAPP_NUMBER_DEFAULT);
+  const [whatsappNumber, setWhatsappNumber] = useState(WHATSAPP_NUMBER_DEFAULT);
 
   // Admin form state
   const [form, setForm] = useState({ name:'', price:'', oldPrice:'', description:'', category:'', stock:'' });
@@ -98,13 +99,24 @@ export default function MarketPage() {
   };
 
   // Commander via WhatsApp
-  const handleOrder = () => {
+  const handleOrder = async () => {
     if (!user) { setShowCart(false); setShowLoginWall(true); return; }
     if (cart.length === 0) return;
 
     const lines = cart.map(i => `• ${i.article.name} x${i.quantity} = ${(i.article.price * i.quantity).toLocaleString()} FCFA`).join('\n');
     const message = `Bonjour R.COM 👋\n\nJe voudrais commander :\n\n${lines}\n\n💰 *TOTAL : ${totalPrice.toLocaleString()} FCFA*\n\nNom : ${user.displayName || user.email}`;
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    try {
+      await saveOrder({
+        buyerUid: user.uid,
+        buyerName: user.displayName || user.email || 'Client',
+        buyerEmail: user.email || '',
+        shopId: 'market',
+        shopName: 'R.COM Market',
+        items: cart.map(i => ({ name: i.article.name, qty: i.quantity, price: i.article.price })),
+        total: totalPrice,
+      });
+    } catch (err) { console.error('Erreur enregistrement commande:', err); }
     window.open(url, '_blank');
     clearCart();
     setShowCart(false);

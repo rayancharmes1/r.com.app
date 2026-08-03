@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import RcomLogo from '../components/RcomLogo';
+import { saveOrder } from '../firebaseDb';
 
 const MAX_PHOTOS = 4;
 
@@ -321,11 +322,22 @@ export default function ShopPage() {
 
   const doAdd = (art) => { if(!user){setShowLoginWall(true);return;} addToCart(discId,art); };
 
-  const handleOrder = () => {
+  const handleOrder = async () => {
     if(!user){setShowCart(false);setShowLoginWall(true);return;}
     const lines = cart.map(i=>`• ${i.article.name} x${i.quantity} = ${(i.article.price*i.quantity).toLocaleString()} FCFA`).join('\n');
     const msg = `Bonjour R.COM 👋\n\nCommande *${disc?.name||'R.COM'}* :\n\n${lines}\n\n💰 *TOTAL : ${totalPrice(discId).toLocaleString()} FCFA*\n\nClient : ${user.displayName||user.email}`;
     const orderPhone = String(disc?.orderPhone || WHATSAPP).replace(/\D/g, '');
+    try {
+      await saveOrder({
+        buyerUid: user.uid,
+        buyerName: user.displayName || user.email || 'Client',
+        buyerEmail: user.email || '',
+        shopId: discId,
+        shopName: disc?.name || 'R.COM',
+        items: cart.map(i => ({ name: i.article.name, qty: i.quantity, price: i.article.price })),
+        total: totalPrice(discId),
+      });
+    } catch (err) { console.error('Erreur enregistrement commande:', err); }
     window.open(`https://wa.me/${orderPhone}?text=${encodeURIComponent(msg)}`,'_blank');
     clearCart(discId); setShowCart(false);
     setOrderOk(true); setTimeout(()=>setOrderOk(false),4000);

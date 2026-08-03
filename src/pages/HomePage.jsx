@@ -267,6 +267,11 @@ export default function HomePage() {
                         Gestion des comptes
                       </button>
                     )}
+                    {isAdmin && (
+                      <button style={{ ...s.ddBtnDark, color: t.ddText }} onClick={() => navigate('/admin/commandes')}>
+                        📦 Commandes
+                      </button>
+                    )}
                     {profile?.hasShop && (
                       <button style={{ ...s.ddBtnDark, color: t.ddText }} onClick={() => navigate(`/shop/seller-${profile.shopId}`)}>
                         Ma boutique

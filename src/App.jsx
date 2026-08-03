@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import AdminOrdersPage from './pages/AdminOrdersPage';
 import MyShopPage from './pages/MyShopPage';
 import BoutiquesPage from './pages/BoutiquesPage';
 import BoutiquePage from './pages/BoutiquePage';
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/market" element={<MarketPage />} />
             <Route path="/shop/:discId" element={<ShopPage />} />
             <Route path="/admin/comptes" element={<AdminUsersPage />} />
+            <Route path="/admin/commandes" element={<AdminOrdersPage />} />
             <Route path="/ma-boutique" element={<MyShopPage />} />
             <Route path="/boutiques" element={<BoutiquesPage />} />
             <Route path="/boutique/:shopId" element={<BoutiquePage />} />

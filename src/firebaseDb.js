@@ -118,3 +118,16 @@ export function buildWhatsAppOrderLink(items, shopName = 'R.COM', orderPhone = W
   const phone = String(orderPhone || WHATSAPP).replace(/\D/g, '');
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
+
+export async function saveOrder(order) {
+  const orderRef = push(ref(db, 'orders'));
+  await set(orderRef, { ...order, createdAt: Date.now() });
+}
+
+export async function getAllOrders() {
+  const snap = await get(ref(db, 'orders'));
+  if (!snap.exists()) return [];
+  return Object.entries(snap.val())
+    .map(([id, data]) => ({ id, ...data }))
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+}
