@@ -6,45 +6,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getAllShops } from '../firebaseDb';
 import RcomLogo from '../components/RcomLogo';
+import { useTheme } from '../context/ThemeContext';
 
 const DEFAULTS = [
   { id:'market', name:'R.COM Market', icon:'🛒', color:'#c0392b', available:true,  description:'Marketplace — électronique, mode, maison...', isDefault:true },
   { id:'tech',   name:'R.COM Tech',   icon:'💻', color:'#2980b9', available:false, description:'Informatique, gadgets & services tech',     isDefault:true },
   { id:'delice', name:'R.COM Délice', icon:'🍽️', color:'#e67e22', available:false, description:'Restauration, traiteur & livraison repas',   isDefault:true },
 ];
-
-const THEME = {
-  light: {
-    bg: '#f0f2f5',
-    headerBg: '#ffffff',
-    headerShadow: '0 2px 12px rgba(0,0,0,0.07)',
-    text: '#1a1a2e',
-    sub: '#888',
-    cardBg: '#ffffff',
-    cardShadow: '0 4px 18px rgba(0,0,0,0.09)',
-    border: '#eee',
-    inputBg: '#ffffff',
-    inputBorder: '#ddd',
-    inputText: '#1a1a2e',
-    ddBg: '#ffffff',
-    ddText: '#333',
-  },
-  dark: {
-    bg: '#121218',
-    headerBg: '#1c1c24',
-    headerShadow: '0 2px 12px rgba(0,0,0,0.4)',
-    text: '#f2f2f5',
-    sub: '#a0a0aa',
-    cardBg: '#1c1c24',
-    cardShadow: '0 4px 18px rgba(0,0,0,0.5)',
-    border: '#33333d',
-    inputBg: '#26262f',
-    inputBorder: '#3a3a45',
-    inputText: '#f2f2f5',
-    ddBg: '#20202a',
-    ddText: '#e8e8ec',
-  },
-};
 
 function compressImage(file, maxSize=400) {
   return new Promise(res => {
@@ -83,15 +51,7 @@ export default function HomePage() {
   const [phoneEdits, setPhoneEdits] = useState({});
   const [createShopPhone, setCreateShopPhone] = useState(WHATSAPP);
   const [createShopPhoneInput, setCreateShopPhoneInput] = useState('');
-  const [darkMode, setDarkMode] = useState(() => {
-    try { return localStorage.getItem('rcom-theme') === 'dark'; } catch { return false; }
-  });
-
-  const t = darkMode ? THEME.dark : THEME.light;
-
-  useEffect(() => {
-    try { localStorage.setItem('rcom-theme', darkMode ? 'dark' : 'light'); } catch {}
-  }, [darkMode]);
+  const { darkMode, toggleDarkMode, t } = useTheme();
 
   useEffect(() => {
     const r = ref(db, 'disciplines');
@@ -146,12 +106,10 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const available = [...disciplines.filter(d => d.available), ...userShops.filter(sh => sh.available)];
-    for (let i = available.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [available[i], available[j]] = [available[j], available[i]];
-    }
-    setMixedAvailable(available);
+    const univers = disciplines.filter(d => d.available);
+    const boutiques = userShops.filter(sh => sh.available)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' }));
+    setMixedAvailable([...univers, ...boutiques]);
   }, [disciplines, userShops]);
 
   useEffect(() => {
@@ -243,7 +201,7 @@ export default function HomePage() {
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <button
             style={{ ...s.themeBtn, background: darkMode ? '#2a2a35' : '#f0f2f5', color: darkMode ? '#f5d76e' : '#555' }}
-            onClick={e => { e.stopPropagation(); setDarkMode(!darkMode); }}
+            onClick={e => { e.stopPropagation(); toggleDarkMode(); }}
             title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
           >
             {darkMode ? '☀️' : '🌙'}

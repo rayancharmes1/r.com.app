@@ -8,6 +8,7 @@ import RcomLogo from '../components/RcomLogo';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { saveOrder } from '../firebaseDb';
+import { useTheme } from '../context/ThemeContext';
 
 const MAX_PHOTOS = 4;
 const WHATSAPP_NUMBER_DEFAULT = '2250160672966';
@@ -38,6 +39,7 @@ export default function MarketPage() {
   const { user, isAdmin } = useAuth();
   const { cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
   const navigate = useNavigate();
+  const { darkMode, toggleDarkMode, t } = useTheme();
 
   const [articles, setArticles] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -177,16 +179,24 @@ export default function MarketPage() {
   };
 
   return (
-    <div style={s.page} onClick={()=>menuOpen&&setMenuOpen(false)}>
+    <div style={{...s.page, background:t.bg}} onClick={()=>menuOpen&&setMenuOpen(false)}>
 
       {/* ── HEADER ── */}
-      <header style={s.header}>
+      <header style={{...s.header, background:t.headerBg, boxShadow:t.headerShadow}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <button style={s.backBtn} onClick={()=>navigate('/')}>←</button>
           <RcomLogo size={34} showText={false}/>
           <span style={s.headerTitle}>R.COM Market</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
+          {/* Theme toggle */}
+          <button
+            style={{ border:'none', borderRadius:'50%', width:36, height:36, fontSize:16, cursor:'pointer', background: darkMode ? '#2a2a35' : '#f0f2f5', color: darkMode ? '#f5d76e' : '#555' }}
+            onClick={toggleDarkMode}
+            title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           {/* Cart button */}
           <button style={s.cartBtn} onClick={()=>setShowCart(true)}>
             🛒
@@ -322,7 +332,7 @@ export default function MarketPage() {
         const qty = cartQty(selected.id);
         return (
           <div style={s.overlay} onClick={()=>setSelected(null)}>
-            <div style={s.detailModal} onClick={e=>e.stopPropagation()}>
+            <div style={{...s.detailModal, background:t.cardBg, color:t.text}} onClick={e=>e.stopPropagation()}>
               <button style={s.closeBtn} onClick={()=>setSelected(null)}>✕</button>
               {imgs.length > 0 && (
                 <div style={s.carousel}>
@@ -374,7 +384,7 @@ export default function MarketPage() {
       {/* ── CART MODAL ── */}
       {showCart && (
         <div style={s.overlay} onClick={()=>setShowCart(false)}>
-          <div style={s.cartModal} onClick={e=>e.stopPropagation()}>
+          <div style={{...s.cartModal, background:t.cardBg, color:t.text}} onClick={e=>e.stopPropagation()}>
             <div style={s.cartHeader}>
               <h2 style={s.cartTitle}>🛒 Mon Panier</h2>
               <button style={s.closeBtn} onClick={()=>setShowCart(false)}>✕</button>
@@ -453,7 +463,7 @@ export default function MarketPage() {
       {/* ── ADMIN FORM MODAL ── */}
       {isAdmin && showForm && (
         <div style={s.overlay}>
-          <div style={s.formModal}>
+          <div style={{...s.formModal, background:t.cardBg, color:t.text}}>
             <h2 style={s.formTitle}>{editId?'Modifier':'Nouvel'} Article</h2>
             <div style={s.formScroll}>
               <p style={s.photoLabel}>Photos ({imagePreviews.length}/{MAX_PHOTOS}) <span style={{fontWeight:400,color:'#aaa',fontSize:11}}>· 1ère = principale</span></p>

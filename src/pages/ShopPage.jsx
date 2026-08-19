@@ -8,6 +8,7 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import RcomLogo from '../components/RcomLogo';
 import { saveOrder } from '../firebaseDb';
+import { useTheme } from '../context/ThemeContext';
 
 const MAX_PHOTOS = 4;
 
@@ -189,6 +190,7 @@ export default function ShopPage() {
   const { user, isAdmin } = useAuth();
   const { getCart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice } = useCart();
   const navigate = useNavigate();
+  const { darkMode, toggleDarkMode, t } = useTheme();
   const cart = getCart(discId);
   const sellerShopId = discId?.startsWith('seller-') ? discId.replace('seller-', '') : null;
   const isSellerShop = !!sellerShopId;
@@ -412,16 +414,23 @@ export default function ShopPage() {
   };
 
   return (
-    <div style={s.page} onClick={()=>menuOpen&&setMenuOpen(false)}>
+    <div style={{...s.page, background:t.bg}} onClick={()=>menuOpen&&setMenuOpen(false)}>
 
       {/* ── HEADER ── */}
-      <header style={{...s.header,borderBottom:`3px solid ${color}`}}>
+      <header style={{...s.header, background:t.headerBg, boxShadow:t.headerShadow, borderBottom:`3px solid ${color}`}}>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
           <button style={s.backBtn} onClick={()=>navigate('/')}>← Univers</button>
           <RcomLogo size={28} showText={false}/>
           <span style={{...s.headerTitle,color}}>{disc?.name||'Boutique'}</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:6}}>
+          <button
+            style={{ border:'none', borderRadius:'50%', width:32, height:32, fontSize:15, cursor:'pointer', background: darkMode ? '#2a2a35' : '#f0f2f5', color: darkMode ? '#f5d76e' : '#555' }}
+            onClick={toggleDarkMode}
+            title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           <button style={s.cartBtn} onClick={()=>setShowCart(true)}>
             🛒{tItems>0&&<span style={s.cartBadge}>{tItems}</span>}
           </button>
@@ -624,7 +633,7 @@ export default function ShopPage() {
         const ii=getImgs(selected); const d=getDiscount(selected); const q=getQty(selected.id);
         return(
           <div style={s.overlay} onClick={()=>setSelected(null)}>
-            <div style={s.detailModal} onClick={e=>e.stopPropagation()}>
+            <div style={{...s.detailModal, background:t.cardBg, color:t.text}} onClick={e=>e.stopPropagation()}>
               <button style={s.closeBtn} onClick={()=>setSelected(null)}>✕</button>
               <div style={{display:'flex',gap:6,marginBottom:10,flexWrap:'wrap'}}>
                 {selected.isFlash&&<span style={{background:'#e74c3c',color:'white',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:8}}>⚡ Vente Flash</span>}
@@ -679,7 +688,7 @@ export default function ShopPage() {
       {/* ── CART MODAL ── */}
       {showCart&&(
         <div style={s.overlay} onClick={()=>setShowCart(false)}>
-          <div style={s.cartModal} onClick={e=>e.stopPropagation()}>
+          <div style={{...s.cartModal, background:t.cardBg, color:t.text}} onClick={e=>e.stopPropagation()}>
             <div style={s.cartHeader}>
               <h2 style={s.cartTitle}>🛒 Mon Panier</h2>
               <button style={s.closeBtn} onClick={()=>setShowCart(false)}>✕</button>
