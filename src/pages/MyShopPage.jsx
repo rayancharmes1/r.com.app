@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
   addShopArticle,
   deleteShopArticle,
@@ -52,6 +53,7 @@ function compress(file, max = 500) {
 export default function MyShopPage() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { darkMode, toggleDarkMode, t } = useTheme();
   const [shop, setShop] = useState(null);
   const [articles, setArticles] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -152,13 +154,20 @@ export default function MyShopPage() {
   };
 
   return (
-    <div style={s.page}>
-      <header style={s.header}>
+    <div style={{ ...s.page, background: t.bg }}>
+      <header style={{ ...s.header, background: t.headerBg, boxShadow: t.headerShadow }}>
         <div>
-          <h1 style={s.title}>{shop?.name || 'Ma boutique'}</h1>
-          <p style={s.sub}>{articles.length} / {shop?.articleLimit || 15} articles publies</p>
+          <h1 style={{ ...s.title, color: t.text }}>{shop?.name || 'Ma boutique'}</h1>
+          <p style={{ ...s.sub, color: t.sub }}>{articles.length} / {shop?.articleLimit || 15} articles publies</p>
         </div>
         <div style={s.headerActions}>
+          <button
+            style={{ border: 'none', borderRadius: '50%', width: 38, height: 38, fontSize: 16, cursor: 'pointer', background: darkMode ? '#2a2a35' : '#f0f2f5', color: darkMode ? '#f5d76e' : '#555' }}
+            onClick={toggleDarkMode}
+            title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           <button style={s.secondary} onClick={() => navigate(`/boutique/${shopId}`)}>Voir</button>
           <button
             style={s.primary}
