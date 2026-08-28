@@ -252,9 +252,9 @@ export default function HomePage() {
       {/* HERO */}
       <div style={s.hero}>
         <h1 style={{ ...s.heroT, color: t.text }}>Bienvenue sur <span style={s.heroS}>R.COM</span></h1>
-        <p style={{ ...s.heroSub, color: t.sub }}>Choisissez votre univers pour découvrir nos offres</p>
+        <p style={{ ...s.heroSub, color: t.sub }}>Votre galerie R.COM : choisissez un univers, puis entrez dans les boutiques.</p>
         <div style={s.heroActions}>
-          <button style={s.heroBtn} onClick={() => navigate('/boutiques')}>Voir les boutiques</button>
+          <button style={s.heroBtn} onClick={() => document.getElementById('galerie-rcom')?.scrollIntoView({ behavior:'smooth', block:'start' })}>Explorer la galerie ↓</button>
           {profile?.hasShop && (
             <button
               style={{ ...s.heroBtnAlt, background: t.cardBg, color: '#c0392b', borderColor: darkMode ? '#4a2a24' : '#f0d1c9' }}
@@ -300,11 +300,11 @@ export default function HomePage() {
 
       {/* SECTION LABELS */}
       {disciplines.some(d => d.available) && (
-        <p style={s.sectionLabel}>✅ Disponibles</p>
+        <p style={s.sectionLabel}>✨ Univers à découvrir</p>
       )}
 
       {/* UNIVERSE GRID */}
-      <div style={s.grid}>
+      <div id="galerie-rcom" style={s.grid}>
         {[...mixedAvailable, ...disciplines.filter(d => !d.available), ...userShops.filter(sh => !sh.available)].map((d, i) => {
           // Insert "Coming soon" label before first unavailable
           const mixedDisciplines = [...mixedAvailable, ...disciplines.filter(x => !x.available), ...userShops.filter(sh => !sh.available)];
