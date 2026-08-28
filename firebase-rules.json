@@ -26,6 +26,12 @@
       "$shopId": {
         ".write": "auth != null && (auth.uid === $shopId || auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1')"
       }
+    },
+    "orders": {
+      ".read": "auth != null && auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1'",
+      "$orderId": {
+        ".write": "auth != null && (auth.uid === 'ImB6u7fpdZbibN3LyCaAnwbHZZq1' || (!data.exists() && newData.child('buyerUid').val() === auth.uid))"
+      }
     }
   }
 }

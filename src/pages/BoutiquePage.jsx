@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { buildWhatsAppOrderLink, getShop, listenShopArticles } from '../firebaseDb';
+import { buildWhatsAppOrderLink, getShop, listenShopArticles, saveOrder } from '../firebaseDb';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function BoutiquePage() {
   const { shopId } = useParams();
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode, t } = useTheme();
+  const { user } = useAuth();
   const [shop, setShop] = useState(null);
   const [articles, setArticles] = useState([]);
   const [cart, setCart] = useState([]);
@@ -30,8 +32,29 @@ export default function BoutiquePage() {
     });
   };
 
-  const sendOrder = () => {
+  const sendOrder = async () => {
     if (cart.length === 0) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await saveOrder({
+        buyerUid: user.uid,
+        buyerName: user.displayName || user.email || 'Client',
+        buyerEmail: user.email || '',
+        shopId,
+        shopName: shop?.name || 'Boutique',
+        items: cart.map(({ name, price, qty }) => ({ name, price, qty })),
+        total,
+      });
+    } catch (error) {
+      console.error('Erreur enregistrement commande:', error);
+      alert("La commande n'a pas pu être enregistrée. Réessayez.");
+      return;
+    }
+
     window.open(buildWhatsAppOrderLink(cart, shop?.name, shop?.orderPhone), '_blank');
     setCart([]);
   };
