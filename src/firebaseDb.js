@@ -52,6 +52,11 @@ export async function updateShopName(shopId, name) {
   await update(ref(db, `shops/${shopId}`), { name: cleanName, updatedAt: Date.now() });
 }
 
+export async function updateShopColor(shopId, color) {
+  const validColor = /^#[0-9a-f]{6}$/i.test(String(color || '')) ? color : '#16a085';
+  await update(ref(db, `shops/${shopId}`), { color: validColor, updatedAt: Date.now() });
+}
+
 export async function updateShopLimit(shopId, articleLimit) {
   const limit = Math.max(1, Number(articleLimit) || DEFAULT_ARTICLE_LIMIT);
   await update(ref(db, `shops/${shopId}`), { articleLimit: limit, updatedAt: Date.now() });

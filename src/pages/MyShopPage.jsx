@@ -8,6 +8,7 @@ import {
   getShop,
   listenShopArticles,
   updateShopArticle,
+  updateShopColor,
 } from '../firebaseDb';
 
 const emptyForm = {
@@ -161,6 +162,10 @@ export default function MyShopPage() {
           <p style={{ ...s.sub, color: t.sub }}>{articles.length} / {shop?.articleLimit || 15} articles publies</p>
         </div>
         <div style={s.headerActions}>
+          <label title="Couleur de votre boutique" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: t.sub }}>
+            Couleur
+            <input type="color" value={shop?.color || '#16a085'} onChange={e => updateShopColor(shopId, e.target.value).then(() => getShop(shopId).then(setShop))} style={{ width: 34, height: 34, padding: 0, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
+          </label>
           <button
             style={{ border: 'none', borderRadius: '50%', width: 38, height: 38, fontSize: 16, cursor: 'pointer', background: darkMode ? '#2a2a35' : '#f0f2f5', color: darkMode ? '#f5d76e' : '#555' }}
             onClick={toggleDarkMode}

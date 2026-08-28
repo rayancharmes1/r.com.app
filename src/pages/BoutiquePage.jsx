@@ -69,10 +69,12 @@ export default function BoutiquePage() {
     );
   }
 
+  const color = shop.color || '#16a085';
+
   return (
     <div style={{ ...s.page, background: t.bg }}>
       {shop.bannerUrl && <img src={shop.bannerUrl} alt="" style={s.banner} />}
-      <header style={s.header}>
+      <header style={{ ...s.header, borderBottom: `3px solid ${color}` }}>
         <div style={s.identity}>
           {shop.imageUrl && <img src={shop.imageUrl} alt="" style={s.logo} />}
           <div>
@@ -103,8 +105,8 @@ export default function BoutiquePage() {
               <div style={s.cardBody}>
                 <h2 style={{ ...s.name, color: t.text }}>{article.name}</h2>
                 {article.description && <p style={{ ...s.desc, color: t.sub }}>{article.description}</p>}
-                <p style={s.price}>{Number(article.price).toLocaleString()} FCFA</p>
-                <button style={s.primary} disabled={article.stock === 0} onClick={() => addToCart(article)}>
+                <p style={{ ...s.price, color }}>{Number(article.price).toLocaleString()} FCFA</p>
+                <button style={{ ...s.primary, background: `linear-gradient(135deg, ${color}, ${color}bb)` }} disabled={article.stock === 0} onClick={() => addToCart(article)}>
                   {article.stock === 0 ? 'Rupture' : 'Ajouter au panier'}
                 </button>
               </div>

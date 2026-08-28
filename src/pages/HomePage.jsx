@@ -88,7 +88,7 @@ export default function HomePage() {
         shopId: shop.id,
         name: shop.name,
         icon: '🏪',
-        color: '#16a085',
+        color: shop.color || '#16a085',
         available: !!shop.active,
         description: `Boutique de ${shop.ownerName || 'vendeur R.COM'}`,
         isSellerShop: true,
@@ -310,6 +310,7 @@ export default function HomePage() {
           const mixedDisciplines = [...mixedAvailable, ...disciplines.filter(x => !x.available), ...userShops.filter(sh => !sh.available)];
           const prevAvail = i > 0 ? mixedDisciplines[i-1].available : true;
           const showComingLabel = !d.available && prevAvail && (disciplines.some(x => !x.available) || userShops.some(sh => !sh.available));
+          const showBoutiqueLabel = d.available && d.isSellerShop && !mixedDisciplines.slice(0, i).some(item => item.isSellerShop);
 
           return (
             <React.Fragment key={d.fbKey || d.id || i}>
@@ -318,7 +319,8 @@ export default function HomePage() {
                   🔒 Bientôt disponibles
                 </div>
               )}
-              <div style={{ ...s.card, background: t.cardBg, boxShadow: t.cardShadow, opacity: d.available ? 1 : 0.55 }}>
+              {showBoutiqueLabel && <div style={{ ...s.mallLabel, color: t.text, borderColor: t.border }}>🏬 Boutiques — entrez dans le magasin de votre choix</div>}
+              <div style={{ ...s.card, background: t.cardBg, boxShadow: t.cardShadow, opacity: d.available ? 1 : 0.55, borderTop: `5px solid ${d.color || '#c0392b'}` }}>
 
                 {/* Cover image or gradient */}
                 <div style={{ ...s.cardCover, background: d.coverImage ? 'transparent' : `linear-gradient(135deg, ${d.color||'#c0392b'}33, ${d.color||'#c0392b'}11)` }}
@@ -368,6 +370,10 @@ export default function HomePage() {
                 )}
                 {isAdmin && !d.isSellerShop && (
                   <div style={{ ...s.adminRow, gap:6 }}>
+                    <label title="Couleur de l'univers" style={{ display:'flex', alignItems:'center', fontSize:12, color:t.sub, gap:4 }}>
+                      Couleur
+                      <input type="color" value={d.color || '#c0392b'} onChange={e => update(ref(db, `disciplines/${d.fbKey || d.id}`), { color:e.target.value })} style={{ width:30, height:30, border:'none', padding:0, cursor:'pointer' }} />
+                    </label>
                     <input
                       type="tel"
                       placeholder="Numéro WhatsApp (ex: 2250160672966)"
@@ -446,7 +452,7 @@ export default function HomePage() {
 }
 
 const s = {
-  page:{ minHeight:'100vh', transition:'background 0.2s' },
+  page:{ minHeight:'100vh', transition:'background 0.2s', backgroundImage:'radial-gradient(circle at 50% 0, rgba(230,126,34,.10), transparent 35%)' },
   header:{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', position:'sticky', top:0, zIndex:100 },
   themeBtn:{ border:'none', borderRadius:'50%', width:38, height:38, fontSize:17, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' },
   avatarBtn:{ background:'none', border:'none', cursor:'pointer', padding:0 },
@@ -459,7 +465,7 @@ const s = {
   ddBtn:{ background:'none', border:'none', color:'#e74c3c', cursor:'pointer', fontSize:14, padding:'4px 0', width:'100%', textAlign:'left' },
   ddBtnDark:{ background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'5px 0', width:'100%', textAlign:'left', fontWeight:600 },
   loginBtn:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', color:'white', border:'none', borderRadius:20, padding:'9px 18px', fontWeight:700, cursor:'pointer', fontSize:14, fontFamily:"'Outfit',sans-serif" },
-  hero:{ textAlign:'center', padding:'40px 20px 16px' },
+  hero:{ textAlign:'center', padding:'40px 20px 16px', background:'linear-gradient(180deg,rgba(192,57,43,.08),transparent)' },
   heroT:{ fontFamily:"'Bebas Neue',cursive", fontSize:48, letterSpacing:2, margin:0 },
   heroS:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' },
   heroSub:{ fontSize:15, marginTop:10 },
@@ -469,8 +475,9 @@ const s = {
   adminHint:{ marginTop:12, fontSize:13, color:'#e67e22', fontWeight:600, background:'#fff8f0', display:'inline-block', padding:'6px 16px', borderRadius:20 },
   sectionLabel:{ fontSize:13, fontWeight:700, color:'#27ae60', padding:'8px 20px 4px', textTransform:'uppercase', letterSpacing:1 },
   sectionDivider:{ gridColumn:'1 / -1', fontSize:13, fontWeight:700, padding:'12px 4px 4px', textTransform:'uppercase', letterSpacing:1, marginTop:8 },
-  grid:{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:18, padding:'12px 20px 48px', maxWidth:1100, margin:'0 auto' },
-  card:{ borderRadius:20, overflow:'hidden', display:'flex', flexDirection:'column', transition:'transform 0.2s, box-shadow 0.2s, background 0.2s' },
+  grid:{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:22, padding:'12px 20px 48px', maxWidth:1100, margin:'0 auto', perspective:'1100px' },
+  card:{ borderRadius:20, overflow:'hidden', display:'flex', flexDirection:'column', transition:'transform 0.2s, box-shadow 0.2s, background 0.2s', transform:'rotateX(2deg)', position:'relative' },
+  mallLabel:{ gridColumn:'1 / -1', marginTop:16, padding:'16px 18px', borderTop:'1px solid', borderBottom:'1px solid', fontWeight:800, letterSpacing:.3 },
   cardCover:{ position:'relative', height:140, overflow:'hidden', cursor:'pointer' },
   coverImg:{ width:'100%', height:'100%', objectFit:'cover' },
   availBadge:{ position:'absolute', top:10, right:10, color:'white', fontSize:11, fontWeight:700, padding:'3px 10px', borderRadius:20 },
