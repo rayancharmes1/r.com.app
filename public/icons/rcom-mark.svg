@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="R.COM">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17243a"/><stop offset="1" stop-color="#0c1423"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="12" flood-opacity=".36"/></filter>
+  </defs>
+  <rect width="512" height="512" rx="118" fill="url(#bg)"/>
+  <g filter="url(#shadow)" transform="translate(256 251) rotate(45) translate(-256 -251)">
+    <path d="M166 161h180l-35 35H201z" fill="#f6b13c"/><path d="M346 161v180l-35-35V196z" fill="#07517b"/>
+    <path d="M346 341H166l35-35h110z" fill="#9f1d3a"/><path d="M166 341V161l35 35v110z" fill="#cf4b35"/>
+    <path d="M201 196h110v110H201z" fill="#f7f8fb"/>
+  </g>
+  <circle cx="414" cy="99" r="18" fill="#f6b13c"/>
+</svg>

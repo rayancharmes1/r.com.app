@@ -196,11 +196,11 @@ export default function HomePage() {
     <div style={{ ...s.page, background: t.bg }} onClick={() => menuOpen && setMenuOpen(false)}>
 
       {/* HEADER */}
-      <header style={{ ...s.header, background: t.headerBg, boxShadow: t.headerShadow }}>
+      <header style={{ ...s.header, background: t.glass, boxShadow: t.headerShadow, borderBottom:`1px solid ${t.border}`, backdropFilter:'blur(18px)' }}>
         <RcomLogo size={44} showText textSize={22}/>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <button
-            style={{ ...s.themeBtn, background: darkMode ? '#2a2a35' : '#f0f2f5', color: darkMode ? '#f5d76e' : '#555' }}
+            style={{ ...s.themeBtn, background: t.controlBg, color: darkMode ? '#f5d76e' : t.controlText }}
             onClick={e => { e.stopPropagation(); toggleDarkMode(); }}
             title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
           >
@@ -250,14 +250,14 @@ export default function HomePage() {
       </header>
 
       {/* HERO */}
-      <div style={s.hero}>
+      <div style={{ ...s.hero, background:t.heroBg }}>
         <h1 style={{ ...s.heroT, color: t.text }}>Bienvenue sur <span style={s.heroS}>R.COM</span></h1>
         <p style={{ ...s.heroSub, color: t.sub }}>Votre galerie R.COM : choisissez un univers, puis entrez dans les boutiques.</p>
         <div style={s.heroActions}>
           <button style={s.heroBtn} onClick={() => document.getElementById('galerie-rcom')?.scrollIntoView({ behavior:'smooth', block:'start' })}>Explorer la galerie ↓</button>
           {profile?.hasShop && (
             <button
-              style={{ ...s.heroBtnAlt, background: t.cardBg, color: '#c0392b', borderColor: darkMode ? '#4a2a24' : '#f0d1c9' }}
+              style={{ ...s.heroBtnAlt, background: t.cardBg, color: '#d45b35', borderColor: t.border, boxShadow:t.cardShadow }}
               onClick={() => navigate(`/shop/seller-${profile.shopId}`)}
             >
               Ma boutique
@@ -268,7 +268,7 @@ export default function HomePage() {
               href={`https://wa.me/${createShopPhone}?text=${encodeURIComponent("Bonjour R.COM 👋, je souhaite créer ma propre boutique sur la plateforme. Pouvez-vous m'aider ?")}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ ...s.heroBtnAlt, background: t.cardBg, color: '#c0392b', borderColor: darkMode ? '#4a2a24' : '#f0d1c9', textDecoration:'none', display:'inline-flex', alignItems:'center' }}
+              style={{ ...s.heroBtnAlt, background: t.cardBg, color: '#d45b35', borderColor: t.border, boxShadow:t.cardShadow, textDecoration:'none', display:'inline-flex', alignItems:'center' }}
             >
               🏪 Créer votre boutique
             </a>
@@ -465,18 +465,18 @@ const s = {
   ddBtn:{ background:'none', border:'none', color:'#e74c3c', cursor:'pointer', fontSize:14, padding:'4px 0', width:'100%', textAlign:'left' },
   ddBtnDark:{ background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'5px 0', width:'100%', textAlign:'left', fontWeight:600 },
   loginBtn:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', color:'white', border:'none', borderRadius:20, padding:'9px 18px', fontWeight:700, cursor:'pointer', fontSize:14, fontFamily:"'Outfit',sans-serif" },
-  hero:{ textAlign:'center', padding:'40px 20px 16px', background:'linear-gradient(180deg,rgba(192,57,43,.08),transparent)' },
-  heroT:{ fontFamily:"'Bebas Neue',cursive", fontSize:48, letterSpacing:2, margin:0 },
+  hero:{ textAlign:'center', padding:'58px 20px 30px', background:'linear-gradient(180deg,rgba(192,57,43,.08),transparent)' },
+  heroT:{ fontFamily:"'Bebas Neue',cursive", fontSize:'clamp(42px,8vw,68px)', letterSpacing:2, margin:0, lineHeight:.95 },
   heroS:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' },
-  heroSub:{ fontSize:15, marginTop:10 },
+  heroSub:{ fontSize:16, margin:'14px auto 0', maxWidth:560, lineHeight:1.55 },
   heroActions:{ display:'flex', gap:10, justifyContent:'center', alignItems:'center', flexWrap:'wrap', marginTop:16 },
-  heroBtn:{ background:'linear-gradient(135deg,#c0392b,#e67e22)', color:'white', border:'none', borderRadius:20, padding:'9px 16px', fontWeight:700, cursor:'pointer', fontFamily:"'Outfit',sans-serif" },
-  heroBtnAlt:{ border:'2px solid #f0d1c9', borderRadius:20, padding:'7px 16px', fontWeight:700, cursor:'pointer', fontFamily:"'Outfit',sans-serif" },
+  heroBtn:{ background:'linear-gradient(135deg,#b93636,#f19c38)', color:'white', border:'none', borderRadius:20, padding:'11px 19px', fontWeight:800, cursor:'pointer', fontFamily:"'Outfit',sans-serif", boxShadow:'0 10px 24px rgba(192,57,43,.24)' },
+  heroBtnAlt:{ border:'1px solid #f0d1c9', borderRadius:20, padding:'10px 18px', fontWeight:800, cursor:'pointer', fontFamily:"'Outfit',sans-serif" },
   adminHint:{ marginTop:12, fontSize:13, color:'#e67e22', fontWeight:600, background:'#fff8f0', display:'inline-block', padding:'6px 16px', borderRadius:20 },
   sectionLabel:{ fontSize:13, fontWeight:700, color:'#27ae60', padding:'8px 20px 4px', textTransform:'uppercase', letterSpacing:1 },
   sectionDivider:{ gridColumn:'1 / -1', fontSize:13, fontWeight:700, padding:'12px 4px 4px', textTransform:'uppercase', letterSpacing:1, marginTop:8 },
   grid:{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))', gap:22, padding:'12px 20px 48px', maxWidth:1100, margin:'0 auto', perspective:'1100px' },
-  card:{ borderRadius:20, overflow:'hidden', display:'flex', flexDirection:'column', transition:'transform 0.2s, box-shadow 0.2s, background 0.2s', transform:'rotateX(2deg)', position:'relative' },
+  card:{ borderRadius:20, overflow:'hidden', display:'flex', flexDirection:'column', transition:'transform .22s ease, box-shadow .22s ease, background .22s ease', position:'relative' },
   mallLabel:{ gridColumn:'1 / -1', marginTop:16, padding:'16px 18px', borderTop:'1px solid', borderBottom:'1px solid', fontWeight:800, letterSpacing:.3 },
   cardCover:{ position:'relative', height:140, overflow:'hidden', cursor:'pointer' },
   coverImg:{ width:'100%', height:'100%', objectFit:'cover' },

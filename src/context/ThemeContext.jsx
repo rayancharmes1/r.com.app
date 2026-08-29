@@ -24,6 +24,8 @@ export const THEME = {
     controlBg: '#f0f2f5',
     controlText: '#555',
     muted: '#888',
+    heroBg: 'radial-gradient(circle at 50% -20%, rgba(231,121,56,.18), transparent 48%), linear-gradient(180deg, #ffffff 0%, #f4f7fb 100%)',
+    glass: 'rgba(255,255,255,.78)',
   },
   dark: {
     bg: '#121218',
@@ -46,6 +48,8 @@ export const THEME = {
     controlBg: '#30303b',
     controlText: '#dedee6',
     muted: '#b5b5c0',
+    heroBg: 'radial-gradient(circle at 50% -20%, rgba(224,119,63,.20), transparent 44%), linear-gradient(180deg, #171a25 0%, #10131c 100%)',
+    glass: 'rgba(28,28,36,.76)',
   },
 };
 

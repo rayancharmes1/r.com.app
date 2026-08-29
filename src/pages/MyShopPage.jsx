@@ -64,6 +64,7 @@ export default function MyShopPage() {
   const [message, setMessage] = useState('');
 
   const shopId = profile?.shopId || user?.uid;
+  const shopColor = shop?.color || '#16a085';
 
   useEffect(() => {
     if (!profile?.hasShop || !shopId) return;
@@ -156,26 +157,26 @@ export default function MyShopPage() {
 
   return (
     <div style={{ ...s.page, background: t.bg }}>
-      <header style={{ ...s.header, background: t.headerBg, boxShadow: t.headerShadow }}>
+      <header style={{ ...s.header, background: t.glass, boxShadow: t.headerShadow, border:`1px solid ${t.border}`, backdropFilter:'blur(18px)', borderRadius:20, padding:18 }}>
         <div>
           <h1 style={{ ...s.title, color: t.text }}>{shop?.name || 'Ma boutique'}</h1>
           <p style={{ ...s.sub, color: t.sub }}>{articles.length} / {shop?.articleLimit || 15} articles publies</p>
         </div>
         <div style={s.headerActions}>
-          <label title="Couleur de votre boutique" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: t.sub }}>
-            Couleur
+          <label title="Couleur de votre boutique" style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: t.sub, background:t.surfaceAlt, border:`1px solid ${t.border}`, padding:'4px 8px 4px 10px', borderRadius:12 }}>
+            Thème
             <input type="color" value={shop?.color || '#16a085'} onChange={e => updateShopColor(shopId, e.target.value).then(() => getShop(shopId).then(setShop))} style={{ width: 34, height: 34, padding: 0, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
           </label>
           <button
-            style={{ border: 'none', borderRadius: '50%', width: 38, height: 38, fontSize: 16, cursor: 'pointer', background: darkMode ? '#2a2a35' : '#f0f2f5', color: darkMode ? '#f5d76e' : '#555' }}
+            style={{ border: 'none', borderRadius: '50%', width: 38, height: 38, fontSize: 16, cursor: 'pointer', background: t.controlBg, color: darkMode ? '#f5d76e' : t.controlText }}
             onClick={toggleDarkMode}
             title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
           >
             {darkMode ? '☀️' : '🌙'}
           </button>
-          <button style={s.secondary} onClick={() => navigate(`/boutique/${shopId}`)}>Voir</button>
+          <button style={{...s.secondary, background:t.cardBg, color:t.text, borderColor:t.border}} onClick={() => navigate(`/boutique/${shopId}`)}>Voir</button>
           <button
-            style={s.primary}
+            style={{...s.primary, background:`linear-gradient(135deg,${shopColor},${shopColor}bb)`}}
             disabled={remaining <= 0 && !editId}
             onClick={() => {
               setForm(emptyForm);
@@ -193,11 +194,11 @@ export default function MyShopPage() {
       {remaining <= 0 && !editId && <p style={s.limitAlert}>Limite atteinte. Demande a l'admin d'augmenter ton nombre d'articles.</p>}
 
       {showForm && (
-        <section style={s.form}>
+        <section style={{...s.form, background:t.cardBg, boxShadow:t.cardShadow, border:`1px solid ${t.border}`}}>
           <h2 style={s.formTitle}>{editId ? 'Modifier l’article' : 'Nouvel article'}</h2>
-          <input style={s.input} placeholder="Nom *" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-          <input style={s.input} placeholder="Categorie" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} />
-          <input style={s.input} type="number" placeholder="Prix FCFA *" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
+          <input style={{...s.input, background:t.inputBg, borderColor:t.inputBorder, color:t.inputText}} placeholder="Nom *" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+          <input style={{...s.input, background:t.inputBg, borderColor:t.inputBorder, color:t.inputText}} placeholder="Categorie" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} />
+          <input style={{...s.input, background:t.inputBg, borderColor:t.inputBorder, color:t.inputText}} type="number" placeholder="Prix FCFA *" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
           <input style={s.input} type="number" placeholder="Ancien prix" value={form.oldPrice} onChange={e => setForm({ ...form, oldPrice: e.target.value })} />
           <input style={s.input} type="number" placeholder="Stock, vide = illimite" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} />
           <textarea style={{ ...s.input, minHeight: 80, resize: 'vertical' }} placeholder="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
@@ -209,7 +210,7 @@ export default function MyShopPage() {
             {form.imageUrl ? <img src={form.imageUrl} alt="" style={s.preview} /> : <span>Ajouter une image</span>}
             <input type="file" accept="image/*" onChange={handleImage} style={{ display: 'none' }} />
           </label>
-          <button style={s.primary} onClick={submit} disabled={saving || (remaining <= 0 && !editId)}>
+          <button style={{...s.primary, background:`linear-gradient(135deg,${shopColor},${shopColor}bb)`}} onClick={submit} disabled={saving || (remaining <= 0 && !editId)}>
             {saving ? 'Publication...' : editId ? 'Enregistrer' : 'Publier'}
           </button>
         </section>
@@ -217,12 +218,12 @@ export default function MyShopPage() {
 
       <div style={s.grid}>
         {articles.map(article => (
-          <article key={article.id} style={s.card}>
+          <article key={article.id} style={{...s.card, background:t.cardBg, boxShadow:t.cardShadow, border:`1px solid ${t.border}`}}>
             {article.imageUrl ? <img src={article.imageUrl} alt={article.name} style={s.image} /> : <div style={s.imageEmpty}>Image</div>}
             <div style={s.cardBody}>
-              <h2 style={s.name}>{article.name}</h2>
-              <p style={s.price}>{Number(article.price).toLocaleString()} FCFA</p>
-              {article.description && <p style={s.desc}>{article.description}</p>}
+              <h2 style={{...s.name,color:t.text}}>{article.name}</h2>
+              <p style={{...s.price,color:shopColor}}>{Number(article.price).toLocaleString()} FCFA</p>
+              {article.description && <p style={{...s.desc,color:t.sub}}>{article.description}</p>}
               <div style={s.cardActions}>
                 <button style={s.secondary} onClick={() => edit(article)}>Modifier</button>
                 <button style={s.danger} onClick={() => removeArticle(article)}>Supprimer</button>

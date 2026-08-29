@@ -1,10 +1,9 @@
-const CACHE_NAME = 'rcom-v1';
+const CACHE_NAME = 'rcom-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  '/icons/rcom-mark.svg',
 ];
 
 // Install - cache static assets
