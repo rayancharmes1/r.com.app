@@ -17,6 +17,13 @@ export const THEME = {
     inputText: '#1a1a2e',
     ddBg: '#ffffff',
     ddText: '#333',
+    surfaceAlt: '#f8fafc',
+    promoBg: '#fffbf0',
+    noticeBg: '#fff8e1',
+    noticeText: '#795548',
+    controlBg: '#f0f2f5',
+    controlText: '#555',
+    muted: '#888',
   },
   dark: {
     bg: '#121218',
@@ -32,6 +39,13 @@ export const THEME = {
     inputText: '#f2f2f5',
     ddBg: '#20202a',
     ddText: '#e8e8ec',
+    surfaceAlt: '#24242e',
+    promoBg: '#20251f',
+    noticeBg: '#27251c',
+    noticeText: '#eadca9',
+    controlBg: '#30303b',
+    controlText: '#dedee6',
+    muted: '#b5b5c0',
   },
 };
 

@@ -9,6 +9,7 @@ import {
   getAllUsers,
   updateShopName,
   updateShopOrderPhone,
+  updateShopColor,
   updateShopLimit,
 } from '../firebaseDb';
 
@@ -21,6 +22,7 @@ export default function AdminUsersPage() {
   const [limits, setLimits] = useState({});
   const [phones, setPhones] = useState({});
   const [names, setNames] = useState({});
+  const [colors, setColors] = useState({});
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
 
@@ -78,6 +80,12 @@ export default function AdminUsersPage() {
   const saveName = async uid => {
     await updateShopName(uid, names[uid] ?? shops[uid]?.name ?? '');
     setMessage('Nom de boutique mis a jour');
+    await load();
+  };
+
+  const saveColor = async uid => {
+    await updateShopColor(uid, colors[uid] ?? shops[uid]?.color ?? '#16a085');
+    setMessage('Couleur de la boutique mise à jour');
     await load();
   };
 
@@ -142,6 +150,14 @@ export default function AdminUsersPage() {
                       />
                       <button style={s.smallPrimary} onClick={() => saveName(user.uid)}>Modifier le nom</button>
                     </div>
+                    <div style={s.colorRow}>
+                      <div>
+                        <span style={s.label}>Couleur de la boutique</span>
+                        <p style={s.colorHint}>Utilisée dans son en-tête, ses boutons et ses promotions.</p>
+                      </div>
+                      <input aria-label="Couleur de la boutique" type="color" value={colors[user.uid] ?? shop.color ?? '#16a085'} onChange={event => setColors(prev => ({ ...prev, [user.uid]: event.target.value }))} style={s.colorInput} />
+                      <button style={s.smallPrimary} onClick={() => saveColor(user.uid)}>Enregistrer</button>
+                    </div>
                     <div style={s.limitRow}>
                       <span style={s.label}>Limite</span>
                       <input
@@ -196,7 +212,10 @@ const s = {
   shopName: { margin: 0, color: '#333', fontWeight: 700 },
   limitRow: { display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: 8 },
   phoneRow: { display: 'grid', gridTemplateColumns: '1fr', alignItems: 'center', gap: 8 },
+  colorRow: { display: 'grid', gridTemplateColumns: '1fr auto auto', alignItems: 'center', gap: 8 },
   label: { fontSize: 13, color: '#666' },
+  colorHint: { margin: '3px 0 0', fontSize: 11, color: '#888', lineHeight: 1.35 },
+  colorInput: { width: 36, height: 36, padding: 2, border: '1px solid #ddd', borderRadius: 9, cursor: 'pointer', background: 'white' },
   limitInput: { minWidth: 0, border: '2px solid #eee', borderRadius: 10, padding: 9, fontFamily: "'Outfit',sans-serif" },
   phoneInput: { width: '100%', boxSizing: 'border-box', border: '2px solid #eee', borderRadius: 10, padding: 9, fontFamily: "'Outfit',sans-serif" },
   primary: { background: 'linear-gradient(135deg,#c0392b,#e67e22)', color: 'white', border: 'none', borderRadius: 12, padding: '11px 14px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" },

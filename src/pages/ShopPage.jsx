@@ -402,6 +402,7 @@ export default function ShopPage() {
   };
 
   const color = disc?.color||'#c0392b';
+  const ui = { control: t.controlBg, controlText: t.controlText, muted: t.muted, surface: t.cardBg, surfaceAlt: t.surfaceAlt, border: t.border };
   const canManage = isAdmin || (isSellerShop && user?.uid === sellerShopId);
   const tItems = totalItems(discId);
   const tPrice = totalPrice(discId);
@@ -419,13 +420,13 @@ export default function ShopPage() {
       {/* ── HEADER ── */}
       <header style={{...s.header, background:t.headerBg, boxShadow:t.headerShadow, borderBottom:`3px solid ${color}`}}>
         <div style={{display:'flex',alignItems:'center',gap:8}}>
-          <button style={s.backBtn} onClick={()=>navigate('/')}>← Univers</button>
+          <button style={{...s.backBtn,background:ui.control,color:ui.controlText}} onClick={()=>navigate('/')}>← Univers</button>
           <RcomLogo size={28} showText={false}/>
           <span style={{...s.headerTitle,color}}>{disc?.name||'Boutique'}</span>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:6}}>
           <button
-            style={{ border:'none', borderRadius:'50%', width:32, height:32, fontSize:15, cursor:'pointer', background: darkMode ? '#2a2a35' : '#f0f2f5', color: darkMode ? '#f5d76e' : '#555' }}
+            style={{ border:'none', borderRadius:'50%', width:32, height:32, fontSize:15, cursor:'pointer', background: ui.control, color: darkMode ? '#f5d76e' : ui.controlText }}
             onClick={toggleDarkMode}
             title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
           >
@@ -443,10 +444,10 @@ export default function ShopPage() {
                   :<div style={{...s.avatarFb,background:color}}>{(user.displayName||user.email||'U')[0].toUpperCase()}</div>}
               </button>
               {menuOpen&&(
-                <div style={s.dd} onClick={e=>e.stopPropagation()}>
-                  <p style={s.ddName}>{user.displayName||user.email}</p>
+                <div style={{...s.dd,background:t.ddBg,color:t.ddText,boxShadow:t.headerShadow}} onClick={e=>e.stopPropagation()}>
+                  <p style={{...s.ddName,color:t.ddText}}>{user.displayName||user.email}</p>
                   {isAdmin&&<span style={{...s.adminTag,background:color}}>⭐ Admin</span>}
-                  <hr style={s.hr}/>
+                  <hr style={{...s.hr,borderTopColor:t.border}}/>
                   <button style={s.ddBtn} onClick={()=>signOut(auth)}>🚪 Déconnexion</button>
                 </div>
               )}
@@ -480,14 +481,14 @@ export default function ShopPage() {
 
       {/* ── PROMO BANNER ── */}
       {promoArts.length>0&&(
-        <div style={{...s.promoBanner,borderLeft:`4px solid ${color}`}}>
+        <div style={{...s.promoBanner,background:t.promoBg,borderLeft:`4px solid ${color}`}}>
           <span style={{...s.promoLabel,color}}>🏷️ PROMOTIONS EN COURS</span>
           <div style={s.flashScroll}>
             {promoArts.map(a=>{const ii=getImgs(a);const d=getDiscount(a);return(
-              <div key={a.id} style={{...s.flashCard,background:'white',border:'1px solid #eee'}} onClick={()=>setSelected(a)}>
-                <div style={s.flashImgW}>{ii[0]?<img src={ii[0]} style={s.flashImg} alt=""/>:<div style={{...s.flashImgPh,color:'#ddd',background:'#f5f5f5'}}>📦</div>}
+              <div key={a.id} style={{...s.flashCard,background:ui.surface,border:`1px solid ${ui.border}`}} onClick={()=>setSelected(a)}>
+                <div style={s.flashImgW}>{ii[0]?<img src={ii[0]} style={s.flashImg} alt=""/>:<div style={{...s.flashImgPh,color:ui.muted,background:ui.surfaceAlt}}>📦</div>}
                 {d&&<span style={{...s.flashDisc,background:color}}>-{d}%</span>}</div>
-                <p style={{...s.flashName,color:'#111'}}>{a.name}</p>
+                <p style={{...s.flashName,color:t.text}}>{a.name}</p>
                 <p style={{...s.flashPrice,color}}>{Number(a.price).toLocaleString()} FCFA</p>
                 {a.oldPrice&&<p style={s.flashOld}>{Number(a.oldPrice).toLocaleString()} FCFA</p>}
               </div>);})}
@@ -496,24 +497,24 @@ export default function ShopPage() {
       )}
 
       {/* ── TABS ── */}
-      <div style={s.tabRow}>
+      <div style={{...s.tabRow,background:ui.surface,borderBottomColor:ui.border}}>
           {[{k:'all',l:'🏪 Tous'},...(flashArts.length>0?[{k:'flash',l:`⚡ Flash (${flashArts.length})`}]:[]),...(promoArts.length>0?[{k:'promo',l:`🏷️ Promos (${promoArts.length})`}]:[]),...(user&&favArticles.length>0?[{k:'favs',l:`❤️ Favoris (${favArticles.length})`}]:[])].map(t=>(
-            <button key={t.k} style={{...s.tabBtn,borderBottom:activeTab===t.k?`3px solid ${color}`:'3px solid transparent',color:activeTab===t.k?color:'#888',fontWeight:activeTab===t.k?700:500}}
+            <button key={t.k} style={{...s.tabBtn,borderBottom:activeTab===t.k?`3px solid ${color}`:'3px solid transparent',color:activeTab===t.k?color:ui.muted,fontWeight:activeTab===t.k?700:500}}
               onClick={()=>setActiveTab(t.k)}>{t.l}</button>
           ))}
         </div>
 
       {/* ── SEARCH + GRID TOGGLE ── */}
       <div style={s.searchW}>
-        <div style={s.searchBox}>
-          <span style={{fontSize:18,color:'#aaa'}}>🔍</span>
-          <input style={s.searchInp} placeholder="Rechercher un article..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        <div style={{...s.searchBox,background:ui.surface,boxShadow:t.cardShadow}}>
+          <span style={{fontSize:18,color:ui.muted}}>🔍</span>
+          <input style={{...s.searchInp,background:'transparent',color:t.text}} placeholder="Rechercher un article..." value={search} onChange={e=>setSearch(e.target.value)}/>
           {search&&<button style={s.clearSearch} onClick={()=>setSearch('')}>✕</button>}
         </div>
         {/* Grid toggle buttons */}
         <div style={s.gridToggle}>
           {[{n:1,icon:'▬'},{n:2,icon:'⊞'},{n:4,icon:'⊟'}].map(g=>(
-            <button key={g.n} style={{...s.gridBtn,background:gridCols===g.n?color:'#f0f2f5',color:gridCols===g.n?'white':'#666'}}
+            <button key={g.n} style={{...s.gridBtn,background:gridCols===g.n?color:ui.control,color:gridCols===g.n?'white':ui.controlText}}
               onClick={()=>setGridCols(g.n)} title={`${g.n} colonne(s)`}>
               {g.icon}
             </button>
@@ -525,7 +526,7 @@ export default function ShopPage() {
       {categories.length>2&&(
         <div style={s.catRow}>
           {categories.map(c=>(
-            <button key={c} style={{...s.catBtn,background:activeCategory===c?color:'white',color:activeCategory===c?'white':'#555'}}
+            <button key={c} style={{...s.catBtn,background:activeCategory===c?color:ui.surface,color:activeCategory===c?'white':ui.controlText,boxShadow:t.cardShadow}}
               onClick={()=>setActiveCategory(c)}>{c}</button>
           ))}
         </div>
@@ -533,7 +534,7 @@ export default function ShopPage() {
 
       {/* ── GUEST NOTICE ── */}
       {!user&&(
-        <div style={s.guestBar}>
+        <div style={{...s.guestBar,background:t.noticeBg,color:t.noticeText}}>
           👁️ Vous naviguez en tant que visiteur —
           <button style={{...s.guestBtn,color}} onClick={()=>navigate('/login')}>Connectez-vous</button>
           pour commander
@@ -565,7 +566,7 @@ export default function ShopPage() {
             const ii=getImgs(a); const d=getDiscount(a); const q=getQty(a.id);
             const compact = gridCols === 4;
             return(
-              <div key={a.id} style={s.card}>
+              <div key={a.id} style={{...s.card,background:ui.surface,boxShadow:t.cardShadow}}>
                 <div style={{...s.imgW, height: compact?120:gridCols===1?220:170}} onClick={()=>setSelected(a)}>
                   {ii[0]?<img src={ii[0]} alt={a.name} style={s.img}/>:<div style={s.imgPh}>📦</div>}
                   {ii.length>1&&<span style={s.photoCount}>📷 {ii.length}</span>}
@@ -581,7 +582,7 @@ export default function ShopPage() {
                 </div>
                 <div style={{...s.cardBody, padding: compact?'8px':gridCols===1?'14px 16px':'10px 12px'}}>
                   {a.category&&!compact&&<span style={{...s.catLabel,color}}>{a.category}</span>}
-                  <h3 style={{...s.artName, fontSize:compact?12:gridCols===1?16:14}} onClick={()=>setSelected(a)}>{a.name}</h3>
+                  <h3 style={{...s.artName, color:t.text, fontSize:compact?12:gridCols===1?16:14}} onClick={()=>setSelected(a)}>{a.name}</h3>
                   <div style={s.priceRow}>
                     <span style={{...s.price,color,fontSize:compact?12:15}}>{Number(a.price).toLocaleString()} FCFA</span>
                     {a.oldPrice&&!compact&&<span style={s.oldPrice}>{Number(a.oldPrice).toLocaleString()} FCFA</span>}
@@ -597,7 +598,7 @@ export default function ShopPage() {
                         <button style={{...s.qtyBtn,width:compact?26:32,height:compact?26:32}} onClick={()=>updateQuantity(discId,a.id,q-1)}>−</button>
                         <span style={{...s.qtyN,fontSize:compact?11:13}}>{q}</span>
                         <button style={{...s.qtyBtn,width:compact?26:32,height:compact?26:32}} onClick={()=>updateQuantity(discId,a.id,q+1)}>+</button>
-                        {!compact&&<button style={s.remBtn} onClick={()=>removeFromCart(discId,a.id)}>🗑️</button>}
+                        {!compact&&<button style={{...s.remBtn,background:darkMode?'#422a31':'#fdecea',color:darkMode?'#ffc2cc':'#c0392b'}} onClick={()=>removeFromCart(discId,a.id)}>🗑️</button>}
                       </div>
                     )
                   )}
@@ -634,7 +635,7 @@ export default function ShopPage() {
         return(
           <div style={s.overlay} onClick={()=>setSelected(null)}>
             <div style={{...s.detailModal, background:t.cardBg, color:t.text}} onClick={e=>e.stopPropagation()}>
-              <button style={s.closeBtn} onClick={()=>setSelected(null)}>✕</button>
+              <button style={{...s.closeBtn,background:ui.control,color:ui.controlText}} onClick={()=>setSelected(null)}>✕</button>
               <div style={{display:'flex',gap:6,marginBottom:10,flexWrap:'wrap'}}>
                 {selected.isFlash&&<span style={{background:'#e74c3c',color:'white',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:8}}>⚡ Vente Flash</span>}
                 {selected.isPromo&&<span style={{background:color,color:'white',fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:8}}>🏷️ Promotion</span>}
@@ -664,9 +665,9 @@ export default function ShopPage() {
                 {selected.oldPrice&&<span style={s.oldPrice}>{Number(selected.oldPrice).toLocaleString()} FCFA</span>}
                 {d&&<span style={{background:'#e74c3c',color:'white',fontSize:13,fontWeight:700,padding:'3px 8px',borderRadius:8}}>-{d}%</span>}
               </div>
-              {selected.description&&<p style={s.detailDesc}>{selected.description}</p>}
+              {selected.description&&<p style={{...s.detailDesc,color:t.sub}}>{selected.description}</p>}
               {selected.stock>0&&<p style={s.stockInfo}>{selected.stock>900?'✅ En stock':`📦 ${selected.stock} restant(s)`}</p>}
-              <div style={s.returnBox}>
+              <div style={{...s.returnBox,background:ui.surfaceAlt,color:t.text}}>
                 {selected.returnDays>0
                   ?<span>↩️ <strong>Retour accepté sous {selected.returnDays} jours</strong></span>
                   :<span>❌ <strong>Cet article n'est pas éligible au retour</strong></span>}
@@ -689,9 +690,9 @@ export default function ShopPage() {
       {showCart&&(
         <div style={s.overlay} onClick={()=>setShowCart(false)}>
           <div style={{...s.cartModal, background:t.cardBg, color:t.text}} onClick={e=>e.stopPropagation()}>
-            <div style={s.cartHeader}>
+            <div style={{...s.cartHeader,borderBottomColor:ui.border}}>
               <h2 style={s.cartTitle}>🛒 Mon Panier</h2>
-              <button style={s.closeBtn} onClick={()=>setShowCart(false)}>✕</button>
+              <button style={{...s.closeBtn,background:ui.control,color:ui.controlText}} onClick={()=>setShowCart(false)}>✕</button>
             </div>
             {cart.length===0?(
               <div style={{textAlign:'center',padding:'48px 0',color:'#aaa'}}><div style={{fontSize:48}}>🛒</div><p style={{marginTop:12}}>Votre panier est vide</p></div>
@@ -699,10 +700,10 @@ export default function ShopPage() {
               <>
                 <div style={s.cartItems}>
                   {cart.map(item=>(
-                    <div key={item.article.id} style={s.cartItem}>
+                    <div key={item.article.id} style={{...s.cartItem,borderBottomColor:ui.border}}>
                       {item.article.imageUrl&&<img src={item.article.imageUrl} style={s.cartImg} alt=""/>}
                       <div style={{flex:1}}>
-                        <p style={s.cartItemName}>{item.article.name}</p>
+                        <p style={{...s.cartItemName,color:t.text}}>{item.article.name}</p>
                         <p style={s.cartItemPriceUnit}>{Number(item.article.price).toLocaleString()} FCFA/u</p>
                         <div style={s.qtyRow}>
                           <button style={s.qtyBtn} onClick={()=>updateQuantity(discId,item.article.id,item.quantity-1)}>−</button>
@@ -747,12 +748,12 @@ export default function ShopPage() {
       {/* ── LOGIN WALL ── */}
       {showLoginWall&&(
         <div style={s.overlay} onClick={()=>setShowLoginWall(false)}>
-          <div style={{background:'white',borderRadius:24,padding:36,width:'100%',maxWidth:360,textAlign:'center'}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:t.cardBg,color:t.text,borderRadius:24,padding:36,width:'100%',maxWidth:360,textAlign:'center'}} onClick={e=>e.stopPropagation()}>
             <div style={{fontSize:52,marginBottom:10}}>🔐</div>
             <h2 style={{fontFamily:"'Bebas Neue',cursive",fontSize:28,letterSpacing:1,marginBottom:8}}>Connexion requise</h2>
-            <p style={{color:'#666',fontSize:14,lineHeight:1.6,marginBottom:22}}>Pour commander, vous devez avoir un compte R.COM. C'est <strong>gratuit</strong> !</p>
+            <p style={{color:t.sub,fontSize:14,lineHeight:1.6,marginBottom:22}}>Pour commander, vous devez avoir un compte R.COM. C'est <strong>gratuit</strong> !</p>
             <button style={{...s.waBtn,background:color,marginBottom:10}} onClick={()=>navigate('/login')}>Se connecter / S'inscrire</button>
-            <button style={{...s.waBtn,background:'#f0f2f5',color:'#555'}} onClick={()=>setShowLoginWall(false)}>Continuer à naviguer</button>
+            <button style={{...s.waBtn,background:ui.control,color:ui.controlText}} onClick={()=>setShowLoginWall(false)}>Continuer à naviguer</button>
           </div>
         </div>
       )}

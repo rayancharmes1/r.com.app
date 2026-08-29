@@ -28,6 +28,7 @@ export async function authorizeShop(userData) {
     ownerEmail: userData.email || '',
     ownerName,
     name: `Boutique de ${ownerName}`,
+    color: '#16a085',
     orderPhone: WHATSAPP,
     articleLimit: DEFAULT_ARTICLE_LIMIT,
     active: true,
