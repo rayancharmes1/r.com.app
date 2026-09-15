@@ -300,7 +300,25 @@ export default function ShopPage() {
     });
     return () => { unsubOld(); unsubNew(); };
   }, [discId, isSellerShop, sellerShopId]);
-
+// En haut du composant ShopPage
+useEffect(() => {
+  // Bloque le scroll quand une modale est ouverte
+  const anyModalOpen = selected || showCart || showLoginWall || showSettings || showForm;
+  if (anyModalOpen) {
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+  } else {
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+  }
+  return () => {
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+  };
+}, [selected, showCart, showLoginWall, showSettings, showForm]);
   useEffect(() => { setCarIdx(0); }, [selected]);
 
   const existingCategories = Array.from(new Set(articles.map(a=>a.category).filter(Boolean)));

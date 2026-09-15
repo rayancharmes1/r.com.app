@@ -38,3 +38,39 @@ button:disabled { cursor: not-allowed; opacity: .58; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+/* ── Empêcher le zoom et les mauvaises manipulations sur iOS ── */
+
+/* Désactive le double-tap zoom */
+html, body {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+/* Empêche le "bounce" élastique (rebond en haut/bas) */
+body {
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Conteneur principal */
+#root {
+  min-height: 100vh;
+  min-height: 100dvh; /* 100% de la hauteur visible sur mobile */
+  overscroll-behavior: contain;
+}
+
+/* Empêche la sélection de texte non voulue (mais garde la sélection dans les inputs) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea, select {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Empêche le zoom sur double-clic des boutons iOS */
+button, a {
+  touch-action: manipulation;
+}
