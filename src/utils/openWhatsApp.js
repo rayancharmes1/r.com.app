@@ -4,32 +4,38 @@
 export function openWhatsApp(url) {
   if (!url) return;
 
-  // Détection iPhone / iPad (y compris iPadOS 13+ qui se fait passer pour un Mac)
   const isIOS =
     /iphone|ipad|ipod/i.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-  // Détection si on est en mode PWA installée (standalone)
   const isStandalone =
     window.navigator.standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches;
 
-  // Cas critique : iPhone + PWA installée → window.open ne marche pas
+  // Convertir l'URL wa.me en schéma natif whatsapp://
+  let nativeUrl = url;
+  if (url.includes('wa.me/')) {
+    // Extraire le numéro et le texte de l'URL wa.me
+    const match = url.match(/wa\.me\/(\d+)(?:\?text=(.*))?/);
+    if (match) {
+      const phone = match[1];
+      const text = match[2] || '';
+      nativeUrl = `whatsapp://send?phone=${phone}${text ? `&text=${text}` : ''}`;
+    }
+  }
+
+  // Cas critique : iPhone + PWA installée
   if (isIOS && isStandalone) {
-    // On redirige la PWA entière vers WhatsApp.
-    // iOS détecte automatiquement le lien wa.me et propose d'ouvrir l'app.
-    window.location.href = url;
+    window.location.href = nativeUrl;
     return;
   }
 
-  // Cas iPhone en Safari (pas installée) : window.open marche
   if (isIOS) {
-    const win = window.open(url, '_blank');
-    // Si Safari bloque le popup (peu probable ici, mais possible)
-    if (!win) window.location.href = url;
+    const win = window.open(nativeUrl, '_blank');
+    if (!win) window.location.href = nativeUrl;
     return;
   }
 
-  // Android + Desktop : window.open fonctionne normalement
+  // Android + Desktop : utiliser l'URL https standard
   window.open(url, '_blank', 'noopener,noreferrer');
 }
