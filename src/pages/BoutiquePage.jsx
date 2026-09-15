@@ -1,8 +1,10 @@
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { buildWhatsAppOrderLink, getShop, listenShopArticles, saveOrder } from '../firebaseDb';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { openWhatsApp } from '../utils/openWhatsApp';
 
 export default function BoutiquePage() {
   const { shopId } = useParams();
@@ -55,7 +57,7 @@ export default function BoutiquePage() {
       return;
     }
 
-    window.open(buildWhatsAppOrderLink(cart, shop?.name, shop?.orderPhone), '_blank');
+    openWhatsApp(buildWhatsAppOrderLink(cart, shop?.name, shop?.orderPhone));
     setCart([]);
   };
 

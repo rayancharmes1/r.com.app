@@ -8,6 +8,7 @@ import RcomLogo from '../components/RcomLogo';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { saveOrder } from '../firebaseDb';
+import { openWhatsApp } from '../utils/openWhatsApp';
 import { useTheme } from '../context/ThemeContext';
 
 const MAX_PHOTOS = 4;
@@ -119,7 +120,7 @@ export default function MarketPage() {
         total: totalPrice,
       });
     } catch (err) { console.error('Erreur enregistrement commande:', err); }
-    window.open(url, '_blank');
+    openWhatsApp(url);
     clearCart();
     setShowCart(false);
     setShowOrderSuccess(true);

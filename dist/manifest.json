@@ -1,0 +1,29 @@
+{
+  "name": "R.COM",
+  "short_name": "R.COM",
+  "description": "La plateforme tout-en-un du Groupe R.COM",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#101827",
+  "theme_color": "#17243a",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/icons/rcom-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "R.COM Market",
+      "short_name": "Market",
+      "description": "Accéder à la marketplace",
+      "url": "/shop/market",
+      "icons": [{ "src": "/icons/rcom-mark.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

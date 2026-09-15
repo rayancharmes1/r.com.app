@@ -8,6 +8,7 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import RcomLogo from '../components/RcomLogo';
 import { saveOrder } from '../firebaseDb';
+import { openWhatsApp } from '../utils/openWhatsApp';
 import { useTheme } from '../context/ThemeContext';
 
 const MAX_PHOTOS = 4;
@@ -340,7 +341,7 @@ export default function ShopPage() {
         total: totalPrice(discId),
       });
     } catch (err) { console.error('Erreur enregistrement commande:', err); }
-    window.open(`https://wa.me/${orderPhone}?text=${encodeURIComponent(msg)}`,'_blank');
+        openWhatsApp(`https://wa.me/${orderPhone}?text=${encodeURIComponent(msg)}`);
     clearCart(discId); setShowCart(false);
     setOrderOk(true); setTimeout(()=>setOrderOk(false),4000);
   };
