@@ -8,8 +8,8 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import RcomLogo from '../components/RcomLogo';
 import { saveOrder } from '../firebaseDb';
-import { openWhatsApp } from '../utils/openWhatsApp';
 import { useTheme } from '../context/ThemeContext';
+import { openWhatsApp } from '../utils/openWhatsApp';
 
 const MAX_PHOTOS = 4;
 
@@ -105,7 +105,6 @@ function SettingsModal({ onClose, color }) {
         <button style={s.closeBtn} onClick={onClose}>✕</button>
         <h2 style={{fontFamily:"'Bebas Neue',cursive",fontSize:26,letterSpacing:1,marginBottom:16}}>⚙️ Paramètres</h2>
 
-        {/* Tabs */}
         <div style={{display:'flex',gap:0,marginBottom:20,borderBottom:'2px solid #eee'}}>
           {[{k:'about',l:'À propos'},{k:'how',l:'Comment ça marche'}].map(t=>(
             <button key={t.k} style={{flex:1,padding:'10px',background:'none',border:'none',cursor:'pointer',fontFamily:"'Outfit',sans-serif",fontSize:14,fontWeight:tab===t.k?700:500,color:tab===t.k?color:'#888',borderBottom:tab===t.k?`3px solid ${color}`:'3px solid transparent',marginBottom:-2}}
@@ -212,7 +211,6 @@ export default function ShopPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [gridCols, setGridCols] = useState(2);
 
-  // ── FAVORITES ──
   const [favIds, setFavIds] = useState({});
 
   useEffect(() => {
@@ -237,7 +235,6 @@ export default function ShopPage() {
 
   const favArticles = articles.filter(a => isFav(a.id));
 
-  // Admin form
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ name:'',price:'',oldPrice:'',description:'',category:'',stock:'',returnDays:'',isFlash:false,flashEnd:'',isPromo:false });
@@ -276,7 +273,6 @@ export default function ShopPage() {
       const combined = [...oldArts, ...newArts];
       const seen = new Set();
       const deduped = combined.filter(a => { if(seen.has(a.id)) return false; seen.add(a.id); return true; });
-      // Shuffle randomly each load
       for (let i = deduped.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [deduped[i], deduped[j]] = [deduped[j], deduped[i]];
@@ -341,7 +337,7 @@ export default function ShopPage() {
         total: totalPrice(discId),
       });
     } catch (err) { console.error('Erreur enregistrement commande:', err); }
-        openWhatsApp(`https://wa.me/${orderPhone}?text=${encodeURIComponent(msg)}`);
+    openWhatsApp(`https://wa.me/${orderPhone}?text=${encodeURIComponent(msg)}`);
     clearCart(discId); setShowCart(false);
     setOrderOk(true); setTimeout(()=>setOrderOk(false),4000);
   };
@@ -408,7 +404,6 @@ export default function ShopPage() {
   const tItems = totalItems(discId);
   const tPrice = totalPrice(discId);
 
-  // Grid columns style
   const gridStyle = {
     1: 'repeat(1,1fr)',
     2: 'repeat(2,1fr)',
@@ -436,7 +431,6 @@ export default function ShopPage() {
           <button style={s.cartBtn} onClick={()=>setShowCart(true)}>
             🛒{tItems>0&&<span style={s.cartBadge}>{tItems}</span>}
           </button>
-          {/* Settings */}
           <button style={s.iconBtn} onClick={()=>setShowSettings(true)} title="Paramètres">⚙️</button>
           {user ? (
             <div style={{position:'relative'}}>
@@ -512,7 +506,6 @@ export default function ShopPage() {
           <input style={{...s.searchInp,background:'transparent',color:t.text}} placeholder="Rechercher un article..." value={search} onChange={e=>setSearch(e.target.value)}/>
           {search&&<button style={s.clearSearch} onClick={()=>setSearch('')}>✕</button>}
         </div>
-        {/* Grid toggle buttons */}
         <div style={s.gridToggle}>
           {[{n:1,icon:'▬'},{n:2,icon:'⊞'},{n:4,icon:'⊟'}].map(g=>(
             <button key={g.n} style={{...s.gridBtn,background:gridCols===g.n?color:ui.control,color:gridCols===g.n?'white':ui.controlText}}
@@ -575,7 +568,6 @@ export default function ShopPage() {
                   {a.isFlash&&<span style={{...s.tag,background:'#e74c3c'}}>⚡</span>}
                   {a.isPromo&&!a.isFlash&&<span style={{...s.tag,background:color}}>🏷️</span>}
                   {a.stock===0&&<div style={s.outStock}>Rupture</div>}
-                  {/* Favorite button */}
                   <button style={{...s.favBtn, color: isFav(a.id)?'#e74c3c':'rgba(255,255,255,0.8)', background: isFav(a.id)?'white':'rgba(0,0,0,0.25)'}}
                     onClick={(e)=>toggleFav(a,e)}>
                     {isFav(a.id)?'❤️':'🤍'}
@@ -584,6 +576,9 @@ export default function ShopPage() {
                 <div style={{...s.cardBody, padding: compact?'8px':gridCols===1?'14px 16px':'10px 12px'}}>
                   {a.category&&!compact&&<span style={{...s.catLabel,color}}>{a.category}</span>}
                   <h3 style={{...s.artName, color:t.text, fontSize:compact?12:gridCols===1?16:14}} onClick={()=>setSelected(a)}>{a.name}</h3>
+                  {a.description&&!compact&&(
+                    <p style={{...s.artDesc, color:t.sub}} onClick={()=>setSelected(a)}>{a.description}</p>
+                  )}
                   <div style={s.priceRow}>
                     <span style={{...s.price,color,fontSize:compact?12:15}}>{Number(a.price).toLocaleString()} FCFA</span>
                     {a.oldPrice&&!compact&&<span style={s.oldPrice}>{Number(a.oldPrice).toLocaleString()} FCFA</span>}
@@ -653,7 +648,6 @@ export default function ShopPage() {
                 </div>
               )}
               {ii.length>1&&<div style={s.thumbRow}>{ii.map((u,i)=><img key={i} src={u} alt="" style={{...s.thumb,outline:i===carIdx?`3px solid ${color}`:'3px solid transparent'}} onClick={()=>setCarIdx(i)}/>)}</div>}
-              {/* Favorite in detail */}
               <button style={{...s.favBtnLarge, background: isFav(selected.id)?'#fdecea':'#f8f8f8', color: isFav(selected.id)?'#e74c3c':'#888'}}
                 onClick={(e)=>toggleFav(selected,e)}>
                 {isFav(selected.id)?'❤️ Retiré des favoris':'🤍 Ajouter aux favoris'}
@@ -792,7 +786,6 @@ export default function ShopPage() {
 
               <input style={fS.inp} placeholder="Nom de l'article *" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
 
-              {/* ── CATEGORY PICKER ── */}
               <CategoryPicker
                 value={form.category}
                 onChange={v=>setForm({...form,category:v})}
@@ -876,9 +869,9 @@ const s = {
   guestBar:{background:'#fff8e1',padding:'8px 14px',fontSize:12,color:'#795548',display:'flex',alignItems:'center',gap:5,flexWrap:'wrap'},
   guestBtn:{background:'none',border:'none',fontWeight:700,cursor:'pointer',fontSize:12,textDecoration:'underline',padding:'0 3px'},
   empty:{textAlign:'center',padding:'80px 20px'},
-  grid:{display:'grid',gap:10,padding:'8px 12px',maxWidth:1200,margin:'0 auto'},
-  card:{background:'white',borderRadius:16,overflow:'hidden',boxShadow:'0 4px 12px rgba(0,0,0,0.08)'},
-  imgW:{position:'relative',overflow:'hidden',background:'#f8f8f8',cursor:'pointer'},
+  grid:{display:'grid',gap:10,padding:'8px 12px',maxWidth:1200,margin:'0 auto',alignItems:'stretch'},
+  card:{background:'white',borderRadius:16,overflow:'hidden',boxShadow:'0 4px 12px rgba(0,0,0,0.08)',display:'flex',flexDirection:'column',height:'100%'},
+  imgW:{position:'relative',overflow:'hidden',background:'#f8f8f8',cursor:'pointer',height:'170px',flexShrink:0},
   img:{width:'100%',height:'100%',objectFit:'cover'},
   imgPh:{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',fontSize:36,color:'#ddd'},
   photoCount:{position:'absolute',bottom:6,right:6,background:'rgba(0,0,0,0.55)',color:'white',fontSize:9,fontWeight:700,padding:'1px 5px',borderRadius:6},
@@ -886,10 +879,11 @@ const s = {
   tag:{position:'absolute',bottom:6,left:6,color:'white',fontSize:9,fontWeight:700,padding:'2px 6px',borderRadius:6},
   outStock:{position:'absolute',inset:0,background:'rgba(0,0,0,0.55)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontWeight:700,fontSize:11},
   outStockBig:{background:'#e74c3c',color:'white',textAlign:'center',padding:'9px',fontSize:14,fontWeight:700,borderRadius:10,marginBottom:14},
-  cardBody:{},
+  cardBody:{display:'flex',flexDirection:'column',flex:1,padding:'10px 12px',minHeight:0},
   catLabel:{fontSize:9,fontWeight:700,textTransform:'uppercase',letterSpacing:1},
-  artName:{fontWeight:700,margin:'2px 0 5px',lineHeight:1.3,cursor:'pointer'},
-  priceRow:{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap',marginBottom:5},
+  artName:{fontWeight:700,margin:'2px 0 5px',lineHeight:1.3,cursor:'pointer',height:'2.6em',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',textOverflow:'ellipsis'},
+  artDesc:{fontSize:11,lineHeight:1.35,margin:'0 0 6px',height:'2.7em',overflow:'hidden',display:'-webkit-box',WebkitLineClamp:2,WebkitBoxOrient:'vertical',textOverflow:'ellipsis'},
+  priceRow:{display:'flex',alignItems:'center',gap:5,flexWrap:'wrap',marginBottom:5,marginTop:'auto'},
   price:{fontWeight:800},
   oldPrice:{fontSize:11,color:'#bbb',textDecoration:'line-through'},
   returnTag:{fontSize:10,color:'#27ae60',fontWeight:600,margin:'0 0 6px'},
@@ -919,6 +913,8 @@ const s = {
   detailDesc:{color:'#555',fontSize:14,lineHeight:1.6,marginBottom:10},
   stockInfo:{color:'#27ae60',fontSize:13,fontWeight:600,marginBottom:8},
   returnBox:{background:'#f8f8f8',borderRadius:10,padding:'10px 14px',fontSize:13,color:'#444',marginTop:4},
+  favBtn:{position:'absolute',top:6,right:6,border:'none',borderRadius:'50%',width:30,height:30,fontSize:14,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 6px rgba(0,0,0,0.15)'},
+  favBtnLarge:{width:'100%',padding:'10px',border:'none',borderRadius:10,fontWeight:700,cursor:'pointer',fontSize:13,marginTop:8,fontFamily:"'Outfit',sans-serif",textAlign:'center'},
   cartModal:{background:'white',borderRadius:22,width:'100%',maxWidth:480,maxHeight:'92vh',display:'flex',flexDirection:'column',overflow:'hidden'},
   cartHeader:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 22px 12px',borderBottom:'1px solid #f0f2f5',position:'relative'},
   cartTitle:{fontFamily:"'Bebas Neue',cursive",fontSize:24,letterSpacing:1},
