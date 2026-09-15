@@ -431,45 +431,58 @@ useEffect(() => {
   return (
     <div style={{...s.page, background:t.bg}} onClick={()=>menuOpen&&setMenuOpen(false)}>
 
-      {/* ── HEADER ── */}
+            {/* ── HEADER ── */}
       <header style={{...s.header, background:t.headerBg, boxShadow:t.headerShadow, borderBottom:`3px solid ${color}`}}>
-        <div style={{display:'flex',alignItems:'center',gap:8}}>
+
+        {/* Ligne 1 : Retour + Logo + Titre + Actions */}
+        <div style={s.headerRow}>
           <button style={{...s.backBtn,background:ui.control,color:ui.controlText}} onClick={()=>navigate('/')}>← Univers</button>
-          <RcomLogo size={28} showText={false}/>
-          <span style={{...s.headerTitle,color}}>{disc?.name||'Boutique'}</span>
+          <RcomLogo size={26} showText={false}/>
+          <h1 style={{...s.headerTitle,color}}>{disc?.name||'Boutique'}</h1>
+          <div style={s.headerActions}>
+            <button
+              style={{ border:'none', borderRadius:'50%', width:32, height:32, fontSize:15, cursor:'pointer', background: ui.control, color: darkMode ? '#f5d76e' : ui.controlText, flexShrink:0 }}
+              onClick={toggleDarkMode}
+              title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
+            <button style={{...s.cartBtn, flexShrink:0}} onClick={()=>setShowCart(true)}>
+              🛒{tItems>0&&<span style={s.cartBadge}>{tItems}</span>}
+            </button>
+            <button style={{...s.iconBtn, flexShrink:0}} onClick={()=>setShowSettings(true)} title="Paramètres">⚙️</button>
+            {user ? (
+              <div style={{position:'relative', flexShrink:0}}>
+                <button style={s.avatarBtn} onClick={e=>{e.stopPropagation();setMenuOpen(!menuOpen);}}>
+                  {user.photoURL?<img src={user.photoURL} style={s.avatar} alt=""/>
+                    :<div style={{...s.avatarFb,background:color}}>{(user.displayName||user.email||'U')[0].toUpperCase()}</div>}
+                </button>
+                {menuOpen&&(
+                  <div style={{...s.dd,background:t.ddBg,color:t.ddText,boxShadow:t.headerShadow}} onClick={e=>e.stopPropagation()}>
+                    <p style={{...s.ddName,color:t.ddText}}>{user.displayName||user.email}</p>
+                    {isAdmin&&<span style={{...s.adminTag,background:color}}>⭐ Admin</span>}
+                    <hr style={{...s.hr,borderTopColor:t.border}}/>
+                    <button style={s.ddBtn} onClick={()=>signOut(auth)}>🚪 Déconnexion</button>
+                  </div>
+                )}
+              </div>
+            ):(
+              <button style={{...s.loginBtn,background:color, flexShrink:0}} onClick={()=>navigate('/login')}>Connexion</button>
+            )}
+          </div>
         </div>
-        <div style={{display:'flex',alignItems:'center',gap:6}}>
-          <button
-            style={{ border:'none', borderRadius:'50%', width:32, height:32, fontSize:15, cursor:'pointer', background: ui.control, color: darkMode ? '#f5d76e' : ui.controlText }}
-            onClick={toggleDarkMode}
-            title={darkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
-          >
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-          <button style={s.cartBtn} onClick={()=>setShowCart(true)}>
-            🛒{tItems>0&&<span style={s.cartBadge}>{tItems}</span>}
-          </button>
-          <button style={s.iconBtn} onClick={()=>setShowSettings(true)} title="Paramètres">⚙️</button>
-          {user ? (
-            <div style={{position:'relative'}}>
-              <button style={s.avatarBtn} onClick={e=>{e.stopPropagation();setMenuOpen(!menuOpen);}}>
-                {user.photoURL?<img src={user.photoURL} style={s.avatar} alt=""/>
-                  :<div style={{...s.avatarFb,background:color}}>{(user.displayName||user.email||'U')[0].toUpperCase()}</div>}
-              </button>
-              {menuOpen&&(
-                <div style={{...s.dd,background:t.ddBg,color:t.ddText,boxShadow:t.headerShadow}} onClick={e=>e.stopPropagation()}>
-                  <p style={{...s.ddName,color:t.ddText}}>{user.displayName||user.email}</p>
-                  {isAdmin&&<span style={{...s.adminTag,background:color}}>⭐ Admin</span>}
-                  <hr style={{...s.hr,borderTopColor:t.border}}/>
-                  <button style={s.ddBtn} onClick={()=>signOut(auth)}>🚪 Déconnexion</button>
-                </div>
-              )}
-            </div>
-          ):(
-            <button style={{...s.loginBtn,background:color}} onClick={()=>navigate('/login')}>Connexion</button>
-          )}
-          {canManage&&<button style={{...s.addBtn,background:color}} onClick={()=>{resetForm();setShowForm(true);}}>+ Article</button>}
-        </div>
+
+        {/* Ligne 2 (admin/vendeur uniquement) : Bouton + Article */}
+        {canManage && (
+          <div style={s.headerAdminRow}>
+            <button
+              style={{...s.addBtn, background:color, width:'100%', padding:'10px', fontSize:14}}
+              onClick={()=>{resetForm();setShowForm(true);}}
+            >
+              + Ajouter un article
+            </button>
+          </div>
+        )}
       </header>
 
       {/* ── FLASH BANNER ── */}
@@ -843,13 +856,62 @@ useEffect(() => {
 }
 
 const s = {
-  page:{minHeight:'100vh',background:'#f0f2f5',paddingBottom:100},
-  header:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 12px',background:'white',boxShadow:'0 2px 12px rgba(0,0,0,0.07)',position:'sticky',top:0,zIndex:100},
-  backBtn:{background:'#f0f2f5',border:'none',borderRadius:10,padding:'6px 10px',fontSize:12,fontWeight:700,cursor:'pointer',color:'#555',fontFamily:"'Outfit',sans-serif",whiteSpace:'nowrap'},
-  headerTitle:{fontFamily:"'Bebas Neue',cursive",fontSize:18,letterSpacing:1},
-  cartBtn:{position:'relative',background:'none',border:'none',fontSize:22,cursor:'pointer',padding:'4px 6px'},
+    page:{minHeight:'100vh',background:'#f0f2f5',paddingBottom:100},
+  header:{
+    display:'flex',
+    flexDirection:'column',
+    gap:8,
+    padding:'10px 12px',
+    background:'white',
+    boxShadow:'0 2px 12px rgba(0,0,0,0.07)',
+    position:'sticky',
+    top:0,
+    zIndex:100,
+  },
+  headerRow:{
+    display:'flex',
+    alignItems:'center',
+    gap:8,
+    minWidth:0,
+  },
+  headerActions:{
+    display:'flex',
+    alignItems:'center',
+    gap:6,
+    marginLeft:'auto',
+    flexShrink:0,
+  },
+  headerAdminRow:{
+    display:'flex',
+    justifyContent:'stretch',
+  },
+  backBtn:{
+    background:'#f0f2f5',
+    border:'none',
+    borderRadius:10,
+    padding:'6px 10px',
+    fontSize:12,
+    fontWeight:700,
+    cursor:'pointer',
+    color:'#555',
+    fontFamily:"'Outfit',sans-serif",
+    whiteSpace:'nowrap',
+    flexShrink:0,
+  },
+  headerTitle:{
+    fontFamily:"'Bebas Neue',cursive",
+    fontSize:18,
+    letterSpacing:1,
+    margin:0,
+    whiteSpace:'nowrap',
+    overflow:'hidden',
+    textOverflow:'ellipsis',
+    minWidth:0,
+    flex:1,
+  },
+  cartBtn:{position:'relative',background:'none',border:'none',fontSize:20,cursor:'pointer',padding:'4px 4px'},
   cartBadge:{position:'absolute',top:0,right:0,background:'#e74c3c',color:'white',fontSize:10,fontWeight:700,width:16,height:16,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center'},
-  iconBtn:{background:'none',border:'none',fontSize:20,cursor:'pointer',padding:'4px 6px'},
+  iconBtn:{background:'none',border:'none',fontSize:18,cursor:'pointer',padding:'4px 4px'},
   avatarBtn:{background:'none',border:'none',cursor:'pointer',padding:0},
   avatar:{width:32,height:32,borderRadius:'50%',objectFit:'cover'},
   avatarFb:{width:32,height:32,borderRadius:'50%',color:'white',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:14},
@@ -859,7 +921,7 @@ const s = {
   hr:{border:'none',borderTop:'1px solid #eee',margin:'10px 0'},
   ddBtn:{background:'none',border:'none',color:'#e74c3c',cursor:'pointer',fontSize:14,padding:'4px 0',width:'100%',textAlign:'left'},
   loginBtn:{border:'none',borderRadius:20,padding:'7px 14px',fontWeight:700,cursor:'pointer',color:'white',fontSize:12,fontFamily:"'Outfit',sans-serif"},
-  addBtn:{color:'white',border:'none',borderRadius:10,padding:'6px 12px',fontWeight:700,cursor:'pointer',fontSize:12,fontFamily:"'Outfit',sans-serif"},
+  addBtn:{color:'white',border:'none',borderRadius:10,padding:'8px 14px',fontWeight:700,cursor:'pointer',fontSize:13,fontFamily:"'Outfit',sans-serif"},
   flashBanner:{padding:'12px 14px'},
   flashTop:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10},
   flashTitle:{color:'white',fontFamily:"'Bebas Neue',cursive",fontSize:20,letterSpacing:2},
